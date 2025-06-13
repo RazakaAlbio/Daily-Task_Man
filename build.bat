@@ -4,12 +4,12 @@ REM This script compiles and runs the Java Task Manager application
 
 setlocal enabledelayedexpansion
 
-REM Set colors for output
-set "RED=[91m"
-set "GREEN=[92m"
-set "YELLOW=[93m"
-set "BLUE=[94m"
-set "RESET=[0m"
+REM Set colors for output (using simple text markers)
+set "RED=[ERROR]"
+set "GREEN=[SUCCESS]"
+set "YELLOW=[INFO]"
+set "BLUE=[BUILD]"
+set "RESET="
 
 echo %BLUE%========================================%RESET%
 echo %BLUE%    Task Manager Application Builder    %RESET%
@@ -18,16 +18,16 @@ echo.
 
 REM Check if Java is installed
 echo %YELLOW%Checking Java installation...%RESET%
-java -version >nul 2>&1
-if %errorlevel% neq 0 (
+java -version >nul 2>nul
+if errorlevel 1 (
     echo %RED%Error: Java is not installed or not in PATH%RESET%
     echo Please install Java JDK 17 or higher
     pause
     exit /b 1
 )
 
-javac -version >nul 2>&1
-if %errorlevel% neq 0 (
+javac -version >nul 2>nul
+if errorlevel 1 (
     echo %RED%Error: Java compiler (javac) is not installed or not in PATH%RESET%
     echo Please install Java JDK 17 or higher
     pause
@@ -110,7 +110,7 @@ REM Compile Java files
 echo %YELLOW%Compiling Java source files...%RESET%
 javac -cp "%CLASSPATH%" -d "%BUILD_DIR%" %JAVA_FILES%
 
-if %errorlevel% neq 0 (
+if errorlevel 1 (
     echo %RED%Compilation failed!%RESET%
     pause
     exit /b 1
@@ -142,7 +142,7 @@ echo %YELLOW%Creating JAR file...%RESET%
 cd /d "%BUILD_DIR%"
 jar cfm "%DIST_DIR%\TaskManager.jar" MANIFEST.MF *.class dao\*.class models\*.class interfaces\*.class gui\*.class database\*.class *.properties *.sql 2>nul
 
-if %errorlevel% neq 0 (
+if errorlevel 1 (
     echo %YELLOW%JAR creation failed, but application can still run from build directory%RESET%
 ) else (
     echo %GREEN%JAR file created: %DIST_DIR%\TaskManager.jar%RESET%
