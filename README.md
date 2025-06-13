@@ -7,6 +7,7 @@ Sebuah aplikasi manajemen tugas berbasis Java Swing yang dirancang untuk penggun
 Task Manager adalah aplikasi desktop yang dibangun menggunakan Java Swing dengan arsitektur MVC (Model-View-Controller). Aplikasi ini menerapkan konsep Object-Oriented Programming (OOP) secara komprehensif dan menggunakan MySQL sebagai database.
 
 ### Fitur Utama:
+
 - **Manajemen User**: Registrasi, login, dan pengelolaan pengguna dengan role-based access
 - **Manajemen Proyek**: Membuat, mengedit, dan melacak status proyek
 - **Manajemen Tugas**: Menugaskan, memperbarui status, dan monitoring tugas
@@ -16,6 +17,7 @@ Task Manager adalah aplikasi desktop yang dibangun menggunakan Java Swing dengan
 ## 🏗️ Arsitektur dan Desain Class
 
 ### Struktur Package:
+
 ```
 src/
 ├── Main.java                 # Entry point aplikasi
@@ -45,6 +47,7 @@ src/
 ```
 
 ### Class Diagram (UML):
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   BaseEntity    │    │   Assignable    │    │   Trackable     │
@@ -70,17 +73,18 @@ src/
 ### 1. Enkapsulasi
 
 **Private Fields dengan Getter/Setter:**
+
 ```java
 public class User extends BaseEntity {
     private String username;        // Private field
     private String passwordHash;    // Private field
     private String email;          // Private field
-    
+
     // Public getter
     public String getUsername() {
         return username;
     }
-    
+
     // Public setter dengan validasi
     public void setUsername(String username) {
         if (username == null || username.trim().isEmpty()) {
@@ -92,6 +96,7 @@ public class User extends BaseEntity {
 ```
 
 **Protected Fields untuk Inheritance:**
+
 ```java
 public abstract class BaseEntity {
     protected Long id;              // Protected untuk subclass
@@ -113,6 +118,7 @@ public abstract class BaseEntity {
 | BaseDAO<T> | TaskDAO | TaskDAO IS-A BaseDAO |
 
 **Method Override Example:**
+
 ```java
 // Di BaseEntity
 public abstract class BaseEntity {
@@ -131,6 +137,7 @@ public class User extends BaseEntity {
 ```
 
 **HAS-A Relationships:**
+
 - Task HAS-A User (assigned user)
 - Task HAS-A Project
 - Project HAS-A User (creator)
@@ -138,16 +145,17 @@ public class User extends BaseEntity {
 
 ### 3. Tingkat Akses
 
-| Modifier | Usage | Alasan |
-|----------|-------|--------|
-| **private** | Fields, helper methods | Enkapsulasi data, hide implementation |
-| **protected** | BaseEntity fields | Akses untuk subclass inheritance |
-| **public** | API methods, constructors | Interface untuk client code |
-| **default** | Package-private utilities | Akses dalam package yang sama |
+| Modifier      | Usage                     | Alasan                                |
+| ------------- | ------------------------- | ------------------------------------- |
+| **private**   | Fields, helper methods    | Enkapsulasi data, hide implementation |
+| **protected** | BaseEntity fields         | Akses untuk subclass inheritance      |
+| **public**    | API methods, constructors | Interface untuk client code           |
+| **default**   | Package-private utilities | Akses dalam package yang sama         |
 
 ### 4. Polimorfisme
 
 **Referensi Polimorfik:**
+
 ```java
 // Referensi superclass, objek subclass
 BaseEntity entity = new User();
@@ -160,6 +168,7 @@ System.out.println(entity2.toString()); // Calls Project.toString()
 ```
 
 **Method Overloading:**
+
 ```java
 public class TaskDAO extends BaseDAO<Task> {
     // Overloaded methods
@@ -170,6 +179,7 @@ public class TaskDAO extends BaseDAO<Task> {
 ```
 
 **Interface Implementation:**
+
 ```java
 // Polimorfisme melalui interface
 Assignable assignableTask = new Task();
@@ -183,18 +193,20 @@ trackableProject.updateStatus(status); // Calls Project.updateStatus()
 ### 5. Abstract Class dan Method
 
 **BaseEntity (Abstract Class):**
+
 ```java
 public abstract class BaseEntity {
     // Concrete methods
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    
+
     // Abstract method - must be implemented by subclasses
     public abstract boolean isValid();
 }
 ```
 
 **BaseDAO (Abstract Class):**
+
 ```java
 public abstract class BaseDAO<T extends BaseEntity> {
     // Template method pattern
@@ -205,7 +217,7 @@ public abstract class BaseDAO<T extends BaseEntity> {
             return update(entity);  // Calls abstract method
         }
     }
-    
+
     // Abstract methods - implemented by subclasses
     protected abstract String getTableName();
     protected abstract T mapResultSet(ResultSet rs) throws SQLException;
@@ -215,6 +227,7 @@ public abstract class BaseDAO<T extends BaseEntity> {
 ```
 
 **Alasan Penggunaan Abstract:**
+
 - **Code Reuse**: Menghindari duplikasi kode common functionality
 - **Template Method Pattern**: Mendefinisikan algoritma umum, detail implementasi di subclass
 - **Enforce Contract**: Memaksa subclass mengimplementasikan method tertentu
@@ -222,6 +235,7 @@ public abstract class BaseDAO<T extends BaseEntity> {
 ### 6. Interface
 
 **Assignable Interface:**
+
 ```java
 public interface Assignable {
     void assign(User user, User assigner);
@@ -233,6 +247,7 @@ public interface Assignable {
 ```
 
 **Trackable Interface:**
+
 ```java
 public interface Trackable {
     String getCurrentStatus();
@@ -244,6 +259,7 @@ public interface Trackable {
 ```
 
 **Implementation di Task:**
+
 ```java
 public class Task extends BaseEntity implements Assignable, Trackable {
     @Override
@@ -252,7 +268,7 @@ public class Task extends BaseEntity implements Assignable, Trackable {
         this.assigner = assigner;
         this.updatedAt = LocalDateTime.now();
     }
-    
+
     @Override
     public void updateStatus(String newStatus, User updatedBy) {
         this.status = Task.Status.valueOf(newStatus);
@@ -263,6 +279,7 @@ public class Task extends BaseEntity implements Assignable, Trackable {
 ```
 
 **Fungsi Interface:**
+
 - **Multiple Inheritance**: Java tidak support multiple class inheritance, tapi bisa implement multiple interfaces
 - **Contract Definition**: Mendefinisikan kontrak yang harus dipenuhi implementing class
 - **Loose Coupling**: Mengurangi ketergantungan antar class
@@ -271,6 +288,7 @@ public class Task extends BaseEntity implements Assignable, Trackable {
 ## 🗄️ Desain dan Implementasi Database
 
 ### Entity Relationship Diagram:
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │     USERS       │    │    PROJECTS     │    │     TASKS       │
@@ -306,12 +324,13 @@ public class Task extends BaseEntity implements Assignable, Trackable {
 ```
 
 ### Koneksi Database (JDBC):
+
 ```java
 public class DatabaseManager {
     private static final String URL = "jdbc:mysql://localhost:3306/task_manager";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "";
-    
+
     public Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USERNAME, PASSWORD);
     }
@@ -319,6 +338,7 @@ public class DatabaseManager {
 ```
 
 ### Query Examples:
+
 ```java
 // UserDAO - Find by username
 public User findByUsername(String username) throws SQLException {
@@ -332,10 +352,10 @@ public User findByUsername(String username) throws SQLException {
 
 // TaskDAO - Find by assigned user
 public List<Task> findByAssignedUser(Long userId) throws SQLException {
-    String sql = """SELECT t.*, p.name as project_name, 
+    String sql = """SELECT t.*, p.name as project_name,
                            u1.username as assigned_username,
                            u2.username as assigner_username
-                    FROM tasks t 
+                    FROM tasks t
                     LEFT JOIN projects p ON t.project_id = p.id
                     LEFT JOIN users u1 ON t.assigned_user_id = u1.id
                     LEFT JOIN users u2 ON t.assigner_id = u2.id
@@ -347,21 +367,23 @@ public List<Task> findByAssignedUser(Long userId) throws SQLException {
 
 ### Fungsi Setiap Tabel:
 
-| Tabel | Fungsi |
-|-------|--------|
-| **users** | Menyimpan data pengguna, authentication, dan role |
-| **projects** | Menyimpan informasi proyek dan hubungan dengan creator |
-| **tasks** | Menyimpan tugas, assignment, dan hubungan dengan project |
-| **status_history** | Audit trail untuk perubahan status project/task |
+| Tabel              | Fungsi                                                   |
+| ------------------ | -------------------------------------------------------- |
+| **users**          | Menyimpan data pengguna, authentication, dan role        |
+| **projects**       | Menyimpan informasi proyek dan hubungan dengan creator   |
+| **tasks**          | Menyimpan tugas, assignment, dan hubungan dengan project |
+| **status_history** | Audit trail untuk perubahan status project/task          |
 
 ## 🚀 Cara Menjalankan
 
 ### Prerequisites:
+
 1. **Java Development Kit (JDK) 17+**
 2. **MySQL Server** (XAMPP recommended)
 3. **MySQL Connector/J** (JDBC Driver)
 
 ### Setup Database:
+
 1. Start XAMPP MySQL service
 2. Database akan dibuat otomatis saat aplikasi pertama kali dijalankan
 3. Default admin user:
@@ -369,6 +391,7 @@ public List<Task> findByAssignedUser(Long userId) throws SQLException {
    - Password: `admin123`
 
 ### Compile dan Run:
+
 ```bash
 # Compile
 javac -cp ".:mysql-connector-java-8.0.33.jar" src/**/*.java
@@ -378,21 +401,23 @@ java -cp ".:mysql-connector-java-8.0.33.jar:src" Main
 ```
 
 ### Atau menggunakan IDE:
+
 1. Import project ke IDE (IntelliJ IDEA, Eclipse, NetBeans)
 2. Add MySQL Connector/J ke classpath
 3. Run `Main.java`
 
 ## 👥 User Roles
 
-| Role | Permissions |
-|------|-------------|
-| **ADMIN** | Full access: manage users, projects, tasks |
-| **MANAGER** | Manage projects and tasks, assign tasks |
-| **EMPLOYEE** | View assigned tasks, update task status |
+| Role         | Permissions                                |
+| ------------ | ------------------------------------------ |
+| **ADMIN**    | Full access: manage users, projects, tasks |
+| **MANAGER**  | Manage projects and tasks, assign tasks    |
+| **EMPLOYEE** | View assigned tasks, update task status    |
 
 ## 🎨 UI/UX Design
 
 ### Color Scheme:
+
 - **Primary**: #2C3E50 (Dark Blue-Gray)
 - **Secondary**: #ECF0F1 (Light Gray)
 - **Success**: #27AE60 (Green)
@@ -401,6 +426,7 @@ java -cp ".:mysql-connector-java-8.0.33.jar:src" Main
 - **Info**: #3498DB (Blue)
 
 ### Design Principles:
+
 - **Clean & Modern**: Minimalist design dengan fokus pada functionality
 - **Professional**: Color scheme yang cocok untuk lingkungan kerja
 - **Responsive**: Layout yang adaptif dengan berbagai ukuran window
@@ -429,7 +455,7 @@ Project ini dibuat untuk keperluan akademik (UAS PBO).
 
 ---
 
-**Developed by**: [Your Name]  
+**Developed by**: Razaqa Albio Kasyfi & Naufal
 **Course**: Pemrograman Berorientasi Objek  
-**Institution**: [Your Institution]  
-**Year**: 2024
+**Institution**: Universitas Brawijaya Fakultas Vokasi
+**Year**: 2025
