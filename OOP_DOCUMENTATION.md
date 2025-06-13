@@ -1685,4 +1685,356 @@ public class Project extends BaseEntity implements Trackable {
     
     @Override
     public boolean isUpdatable() {
-        return status != Status.COMPLETED && status != Status
+        return status != Status.COMPLETED && status != Status.CANCELLED;
+    }
+    
+    @Override
+    public double getProgressPercentage() {
+        return progressPercentage;
+    }
+    
+    // HELPER methods
+    
+    private boolean isValidStatusTransition(Status from, Status to) {
+        if (from == null) return true;
+        
+        switch (from) {
+            case PLANNING:
+                return to == Status.ACTIVE || to == Status.CANCELLED;
+            case ACTIVE:
+                return to == Status.ON_HOLD || to == Status.COMPLETED || to == Status.CANCELLED;
+            case ON_HOLD:
+                return to == Status.ACTIVE || to == Status.CANCELLED;
+            case COMPLETED:
+                return to == Status.ACTIVE; // Reopen project
+            case CANCELLED:
+                return to == Status.PLANNING; // Reactivate project
+            default:
+                return false;
+        }
+    }
+    
+    private void updateProgressBasedOnStatus() {
+        switch (status) {
+            case PLANNING:
+                this.progressPercentage = 0.0;
+                break;
+            case COMPLETED:
+                this.progressPercentage = 100.0;
+                break;
+            case CANCELLED:
+                // Keep current progress
+                break;
+        }
+    }
+    
+    private void updateDatesBasedOnStatus() {
+        LocalDate today = LocalDate.now();
+        
+        switch (status) {
+            case ACTIVE:
+                if (startDate == null) {
+                    startDate = today;
+                }
+                break;
+            case COMPLETED:
+                if (endDate == null) {
+                    endDate = today;
+                }
+                break;
+        }
+    }
+    
+    // ENUM definitions
+    public enum Status {
+        PLANNING("Planning", "#6c757d"),
+        ACTIVE("Active", "#007bff"),
+        ON_HOLD("On Hold", "#ffc107"),
+        COMPLETED("Completed", "#28a745"),
+        CANCELLED("Cancelled", "#dc3545");
+        
+        private final String displayName;
+        private final String color;
+        
+        Status(String displayName, String color) {
+            this.displayName = displayName;
+            this.color = color;
+        }
+        
+        public String getDisplayName() { return displayName; }
+        public String getColor() { return color; }
+    }
+}
+```
+
+### 7.5 Fungsi Interface dalam Program
+
+#### 1. **Multiple Inheritance**
+```java
+// Task dapat implement multiple interfaces
+public class Task extends BaseEntity implements Assignable, Trackable {
+    // Implementation
+}
+
+// Polymorphic usage
+Assignable assignable = new Task();
+Trackable trackable = new Task();
+BaseEntity entity = new Task();
+```
+
+#### 2. **Contract Definition**
+```java
+// Interface mendefinisikan kontrak yang harus dipenuhi
+public void processAssignables(List<Assignable> items, User manager, User employee) {
+    for (Assignable item : items) {
+        if (!item.isAssigned()) {
+            item.assign(employee, manager);
+        }
+    }
+}
+
+// Method ini dapat menerima semua object yang implement Assignable
+List<Assignable> tasks = Arrays.asList(
+    new Task("Task 1"),
+    new Task("Task 2"),
+    new Task("Task 3")
+);
+processAssignables(tasks, manager, employee);
+```
+
+#### 3. **Loose Coupling**
+```java
+public class NotificationService {
+    public void notifyStatusChange(Trackable item, User user) {
+        String message = "Status " + item.getClass().getSimpleName() + 
+                        " '" + item + "' changed to " + item.getCurrentStatus();
+        sendNotification(user, message);
+    }
+    
+    // Method ini tidak perlu tahu apakah item adalah Task atau Project
+    // Cukup tahu bahwa item implement Trackable
+}
+```
+
+---
+
+## 8. Hubungan IS-A dan HAS-A
+
+### 8.1 IS-A Relationships (Inheritance)
+
+| Subclass | Superclass | Relationship | Explanation |
+|----------|------------|--------------|-------------|
+| User | BaseEntity | User IS-A BaseEntity | User mewarisi properties dan methods dari BaseEntity |
+| Project | BaseEntity | Project IS-A BaseEntity | Project mewarisi properties dan methods dari BaseEntity |
+| Task | BaseEntity | Task IS-A BaseEntity | Task mewarisi properties dan methods dari BaseEntity |
+| UserDAO | BaseDAO<User> | UserDAO IS-A BaseDAO | UserDAO mewarisi template methods dari BaseDAO |
+| ProjectDAO | BaseDAO<Project> | ProjectDAO IS-A BaseDAO | ProjectDAO mewarisi template methods dari BaseDAO |
+| TaskDAO | BaseDAO<Task> | TaskDAO IS-A BaseDAO | TaskDAO mewarisi template methods dari BaseDAO |
+| LoginPanel | JPanel | LoginPanel IS-A JPanel | LoginPanel mewarisi GUI functionality dari JPanel |
+| DashboardPanel | JPanel | DashboardPanel IS-A JPanel | DashboardPanel mewarisi GUI functionality dari JPanel |
+
+#### Contoh IS-A Implementation:
+```java
+// User IS-A BaseEntity
+BaseEntity entity = new User(); // Valid - polymorphic assignment
+entity.getId(); // Inherited method
+entity.getCreatedAt(); // Inherited method
+entity.isValid(); // Overridden method
+
+// UserDAO IS-A BaseDAO
+BaseDAO<User> dao = new UserDAO(); // Valid - polymorphic assignment
+dao.save(user); // Inherited template method
+dao.findById(1L); // Inherited method
+```
+
+### 8.2 HAS-A Relationships (Composition/Aggregation)
+
+#### Composition (Strong HAS-A)
+```java
+public class Task extends BaseEntity {
+    // Task HAS-A Status (Composition - Status is part of Task)
+    private Status status;
+    
+    // Task HAS-A Priority (Composition - Priority is part of Task)
+    private Priority priority;
+    
+    // Task HAS-A LocalDateTime (Composition - dueDate is part of Task)
+    private LocalDateTime dueDate;
+    
+    // When Task is destroyed, these components are also destroyed
+}
+
+public class Project extends BaseEntity {
+    // Project HAS-A Status (Composition)
+    private Status status;
+    
+    // Project HAS-A Priority (Composition)
+    private Priority priority;
+    
+    // Project HAS-A LocalDate (Composition)
+    private LocalDate startDate;
+    private LocalDate endDate;
+    
+    // Project HAS-A BigDecimal (Composition)
+    private BigDecimal budget;
+}
+```
+
+#### Aggregation (Weak HAS-A)
+```java
+public class Task extends BaseEntity {
+    // Task HAS-A Project (Aggregation - Project exists independently)
+    private Project project;
+    
+    // Task HAS-A User (Aggregation - User exists independently)
+    private User assignedUser;
+    
+    // Task HAS-A User (Aggregation - User exists independently)
+    private User assigner;
+    
+    // When Task is destroyed, Project and Users continue to exist
+}
+
+public class Project extends BaseEntity {
+    // Project HAS-A User (Aggregation - User exists independently)
+    private User creator;
+    
+    // Project HAS-A List<Task> (Aggregation - Tasks can exist independently)
+    private List<Task> tasks;
+    
+    // When Project is destroyed, creator User continues to exist
+    // Tasks may or may not continue to exist (depends on business rules)
+}
+
+public class User extends BaseEntity {
+    // User HAS-A Role (Aggregation - Role is an enum, exists independently)
+    private Role role;
+    
+    // User HAS-A List<Task> (Aggregation - Tasks exist independently)
+    private List<Task> assignedTasks;
+    
+    // User HAS-A List<Project> (Aggregation - Projects exist independently)
+    private List<Project> createdProjects;
+}
+```
+
+#### GUI HAS-A Relationships
+```java
+public class TaskManagerApp extends JFrame {
+    // TaskManagerApp HAS-A LoginPanel (Composition)
+    private LoginPanel loginPanel;
+    
+    // TaskManagerApp HAS-A DashboardPanel (Composition)
+    private DashboardPanel dashboardPanel;
+    
+    // TaskManagerApp HAS-A User (Aggregation)
+    private User currentUser;
+    
+    // TaskManagerApp HAS-A DatabaseManager (Aggregation)
+    private DatabaseManager databaseManager;
+}
+
+public class DashboardPanel extends JPanel {
+    // DashboardPanel HAS-A ProjectManagementPanel (Composition)
+    private ProjectManagementPanel projectPanel;
+    
+    // DashboardPanel HAS-A TaskManagementPanel (Composition)
+    private TaskManagementPanel taskPanel;
+    
+    // DashboardPanel HAS-A UserManagementPanel (Composition)
+    private UserManagementPanel userPanel;
+    
+    // DashboardPanel HAS-A User (Aggregation)
+    private User currentUser;
+}
+```
+
+### 8.3 Tabel Hubungan Lengkap
+
+| Class A | Relationship | Class B | Type | Explanation |
+|---------|--------------|---------|------|-------------|
+| User | IS-A | BaseEntity | Inheritance | User extends BaseEntity |
+| Task | IS-A | BaseEntity | Inheritance | Task extends BaseEntity |
+| Project | IS-A | BaseEntity | Inheritance | Project extends BaseEntity |
+| Task | HAS-A | Project | Aggregation | Task belongs to a Project |
+| Task | HAS-A | User (assigned) | Aggregation | Task is assigned to a User |
+| Task | HAS-A | User (assigner) | Aggregation | Task is assigned by a User |
+| Task | HAS-A | Status | Composition | Task has a Status |
+| Task | HAS-A | Priority | Composition | Task has a Priority |
+| Project | HAS-A | User (creator) | Aggregation | Project is created by a User |
+| Project | HAS-A | Status | Composition | Project has a Status |
+| Project | HAS-A | Priority | Composition | Project has a Priority |
+| User | HAS-A | Role | Composition | User has a Role |
+| TaskDAO | IS-A | BaseDAO | Inheritance | TaskDAO extends BaseDAO |
+| UserDAO | IS-A | BaseDAO | Inheritance | UserDAO extends BaseDAO |
+| ProjectDAO | IS-A | BaseDAO | Inheritance | ProjectDAO extends BaseDAO |
+| TaskManagerApp | HAS-A | LoginPanel | Composition | App contains LoginPanel |
+| TaskManagerApp | HAS-A | DashboardPanel | Composition | App contains DashboardPanel |
+| TaskManagerApp | HAS-A | User | Aggregation | App has current User |
+| DashboardPanel | HAS-A | ProjectManagementPanel | Composition | Dashboard contains ProjectPanel |
+| DashboardPanel | HAS-A | TaskManagementPanel | Composition | Dashboard contains TaskPanel |
+| DashboardPanel | HAS-A | UserManagementPanel | Composition | Dashboard contains UserPanel |
+
+### 8.4 Implementasi dalam Kode
+
+#### IS-A Example
+```java
+// Polymorphic method yang menerima BaseEntity
+public void saveEntity(BaseEntity entity) {
+    if (entity.isValid()) {
+        entity.updateTimestamps();
+        // Save to database
+    }
+}
+
+// Dapat dipanggil dengan subclass manapun
+saveEntity(new User()); // User IS-A BaseEntity
+saveEntity(new Project()); // Project IS-A BaseEntity
+saveEntity(new Task()); // Task IS-A BaseEntity
+```
+
+#### HAS-A Example
+```java
+public class TaskService {
+    public void assignTask(Task task, User employee, User manager) {
+        // Task HAS-A User (assigned)
+        task.setAssignedUser(employee);
+        
+        // Task HAS-A User (assigner)
+        task.setAssigner(manager);
+        
+        // Task HAS-A Status
+        task.setStatus(Task.Status.TODO);
+        
+        // Save relationships
+        taskDAO.save(task);
+    }
+    
+    public void createProjectTask(Project project, String title, User creator) {
+        Task task = new Task();
+        task.setTitle(title);
+        
+        // Task HAS-A Project
+        task.setProject(project);
+        
+        // Task HAS-A User (creator)
+        task.setCreatedBy(creator.getId());
+        
+        taskDAO.save(task);
+    }
+}
+```
+
+---
+
+## 📋 Kesimpulan
+
+Implementasi OOP dalam Task Manager Application mendemonstrasikan:
+
+1. **Enkapsulasi**: Data protection melalui private fields dan controlled access
+2. **Inheritance**: Code reuse dan polymorphism melalui BaseEntity dan BaseDAO
+3. **Polimorfisme**: Runtime dan compile-time polymorphism untuk flexibility
+4. **Abstraksi**: Abstract classes dan interfaces untuk contract definition
+5. **Composition/Aggregation**: Proper object relationships dan dependency management
+
+Semua konsep OOP ini bekerja sama untuk menciptakan aplikasi yang maintainable, extensible, dan robust.
