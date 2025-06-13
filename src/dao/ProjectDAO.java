@@ -245,15 +245,13 @@ public class ProjectDAO extends BaseDAO<Project> {
      * @return Array containing [totalTasks, completedTasks, inProgressTasks, todoTasks]
      */
     public int[] getProjectStatistics(int projectId) {
-        String sql = """
-            SELECT 
-                COUNT(*) as total_tasks,
-                SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_tasks,
-                SUM(CASE WHEN status = 'IN_PROGRESS' THEN 1 ELSE 0 END) as in_progress_tasks,
-                SUM(CASE WHEN status = 'TODO' THEN 1 ELSE 0 END) as todo_tasks
-            FROM tasks 
-            WHERE project_id = ?
-        """;
+        String sql = "SELECT " +
+            "COUNT(*) as total_tasks," +
+            "SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_tasks," +
+            "SUM(CASE WHEN status = 'IN_PROGRESS' THEN 1 ELSE 0 END) as in_progress_tasks," +
+            "SUM(CASE WHEN status = 'TODO' THEN 1 ELSE 0 END) as todo_tasks " +
+            "FROM tasks " +
+            "WHERE project_id = ?";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, projectId);
@@ -321,15 +319,13 @@ public class ProjectDAO extends BaseDAO<Project> {
      */
     public List<Object[]> getProjectsWithTaskCounts() {
         List<Object[]> results = new ArrayList<>();
-        String sql = """
-            SELECT p.*, 
-                   COUNT(t.id) as task_count,
-                   SUM(CASE WHEN t.status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_count
-            FROM projects p
-            LEFT JOIN tasks t ON p.id = t.project_id
-            GROUP BY p.id, p.name, p.description, p.status, p.created_by, p.created_at, p.updated_at
-            ORDER BY p.created_at DESC
-        """;
+        String sql = "SELECT p.*, " +
+            "COUNT(t.id) as task_count," +
+            "SUM(CASE WHEN t.status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_count " +
+            "FROM projects p " +
+            "LEFT JOIN tasks t ON p.id = t.project_id " +
+            "GROUP BY p.id, p.name, p.description, p.status, p.created_by, p.created_at, p.updated_at " +
+            "ORDER BY p.created_at DESC";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();

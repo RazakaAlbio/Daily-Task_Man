@@ -104,92 +104,84 @@ public class DatabaseManager {
             Statement stmt = connection.createStatement();
             
             // Create users table
-            String createUsersTable = """
-                CREATE TABLE IF NOT EXISTS users (
-                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                    username VARCHAR(50) UNIQUE NOT NULL,
-                    password_hash VARCHAR(255) NOT NULL,
-                    email VARCHAR(100) UNIQUE NOT NULL,
-                    full_name VARCHAR(100) NOT NULL,
-                    role ENUM('ADMIN', 'MANAGER', 'EMPLOYEE') NOT NULL DEFAULT 'EMPLOYEE',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    created_by BIGINT,
-                    updated_by BIGINT,
-                    INDEX idx_username (username),
-                    INDEX idx_email (email),
-                    INDEX idx_role (role)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-            """;
+            String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
+                "id BIGINT AUTO_INCREMENT PRIMARY KEY," +
+                "username VARCHAR(50) UNIQUE NOT NULL," +
+                "password_hash VARCHAR(255) NOT NULL," +
+                "email VARCHAR(100) UNIQUE NOT NULL," +
+                "full_name VARCHAR(100) NOT NULL," +
+                "role ENUM('ADMIN', 'MANAGER', 'EMPLOYEE') NOT NULL DEFAULT 'EMPLOYEE'," +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+                "created_by BIGINT," +
+                "updated_by BIGINT," +
+                "INDEX idx_username (username)," +
+                "INDEX idx_email (email)," +
+                "INDEX idx_role (role)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
             
             stmt.executeUpdate(createUsersTable);
             
             // Create projects table
-            String createProjectsTable = """
-                CREATE TABLE IF NOT EXISTS projects (
-                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                    name VARCHAR(200) NOT NULL,
-                    description TEXT,
-                    status ENUM('PLANNING', 'ACTIVE', 'ON_HOLD', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'PLANNING',
-                    creator_id BIGINT NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    created_by BIGINT,
-                    updated_by BIGINT,
-                    FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE RESTRICT,
-                    INDEX idx_name (name),
-                    INDEX idx_status (status),
-                    INDEX idx_creator (creator_id)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-            """;
+            String createProjectsTable = "CREATE TABLE IF NOT EXISTS projects (" +
+                "id BIGINT AUTO_INCREMENT PRIMARY KEY," +
+                "name VARCHAR(200) NOT NULL," +
+                "description TEXT," +
+                "status ENUM('PLANNING', 'ACTIVE', 'ON_HOLD', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'PLANNING'," +
+                "creator_id BIGINT NOT NULL," +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+                "created_by BIGINT," +
+                "updated_by BIGINT," +
+                "FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE RESTRICT," +
+                "INDEX idx_name (name)," +
+                "INDEX idx_status (status)," +
+                "INDEX idx_creator (creator_id)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
             
             stmt.executeUpdate(createProjectsTable);
             
             // Create tasks table
-            String createTasksTable = """
-                CREATE TABLE IF NOT EXISTS tasks (
-                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                    title VARCHAR(200) NOT NULL,
-                    description TEXT,
-                    status ENUM('TODO', 'IN_PROGRESS', 'DONE') NOT NULL DEFAULT 'TODO',
-                    priority ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT') NOT NULL DEFAULT 'MEDIUM',
-                    project_id BIGINT,
-                    assigned_user_id BIGINT,
-                    assigner_id BIGINT,
-                    due_date DATE,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    created_by BIGINT,
-                    updated_by BIGINT,
-                    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL,
-                    FOREIGN KEY (assigned_user_id) REFERENCES users(id) ON DELETE SET NULL,
-                    FOREIGN KEY (assigner_id) REFERENCES users(id) ON DELETE SET NULL,
-                    INDEX idx_title (title),
-                    INDEX idx_status (status),
-                    INDEX idx_priority (priority),
-                    INDEX idx_project (project_id),
-                    INDEX idx_assigned_user (assigned_user_id),
-                    INDEX idx_due_date (due_date)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-            """;
+            String createTasksTable = "CREATE TABLE IF NOT EXISTS tasks (" +
+                "id BIGINT AUTO_INCREMENT PRIMARY KEY," +
+                "title VARCHAR(200) NOT NULL," +
+                "description TEXT," +
+                "status ENUM('TODO', 'IN_PROGRESS', 'DONE') NOT NULL DEFAULT 'TODO'," +
+                "priority ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT') NOT NULL DEFAULT 'MEDIUM'," +
+                "project_id BIGINT," +
+                "assigned_user_id BIGINT," +
+                "assigner_id BIGINT," +
+                "due_date DATE," +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+                "created_by BIGINT," +
+                "updated_by BIGINT," +
+                "FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL," +
+                "FOREIGN KEY (assigned_user_id) REFERENCES users(id) ON DELETE SET NULL," +
+                "FOREIGN KEY (assigner_id) REFERENCES users(id) ON DELETE SET NULL," +
+                "INDEX idx_title (title)," +
+                "INDEX idx_status (status)," +
+                "INDEX idx_priority (priority)," +
+                "INDEX idx_project (project_id)," +
+                "INDEX idx_assigned_user (assigned_user_id)," +
+                "INDEX idx_due_date (due_date)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
             
             stmt.executeUpdate(createTasksTable);
             
             // Create status_history table for tracking status changes
-            String createStatusHistoryTable = """
-                CREATE TABLE IF NOT EXISTS status_history (
-                    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                    entity_type ENUM('PROJECT', 'TASK') NOT NULL,
-                    entity_id BIGINT NOT NULL,
-                    old_status VARCHAR(50),
-                    new_status VARCHAR(50) NOT NULL,
-                    changed_by BIGINT,
-                    changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    notes TEXT,
-                    INDEX idx_entity (entity_type, entity_id),
-                    INDEX idx_changed_at (changed_at)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-            """;
+            String createStatusHistoryTable = "CREATE TABLE IF NOT EXISTS status_history (" +
+                "id BIGINT AUTO_INCREMENT PRIMARY KEY," +
+                "entity_type ENUM('PROJECT', 'TASK') NOT NULL," +
+                "entity_id BIGINT NOT NULL," +
+                "old_status VARCHAR(50)," +
+                "new_status VARCHAR(50) NOT NULL," +
+                "changed_by BIGINT," +
+                "changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                "notes TEXT," +
+                "INDEX idx_entity (entity_type, entity_id)," +
+                "INDEX idx_changed_at (changed_at)" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
             
             stmt.executeUpdate(createStatusHistoryTable);
             
@@ -308,10 +300,8 @@ public class DatabaseManager {
         
         if (userCount == 0) {
             // Create default admin user
-            String insertQuery = """
-                INSERT INTO users (username, password_hash, email, full_name, role) 
-                VALUES (?, ?, ?, ?, ?)
-            """;
+            String insertQuery = "INSERT INTO users (username, password_hash, email, full_name, role) " +
+                "VALUES (?, ?, ?, ?, ?)";
             
             PreparedStatement insertStmt = getConnection().prepareStatement(insertQuery);
             insertStmt.setString(1, "admin");
@@ -344,16 +334,14 @@ public class DatabaseManager {
             stmt.executeUpdate("OPTIMIZE TABLE status_history");
             
             // Clean up old status history (keep only last 1000 records per entity)
-            String cleanupQuery = """
-                DELETE sh1 FROM status_history sh1
-                INNER JOIN (
-                    SELECT entity_type, entity_id, 
-                           ROW_NUMBER() OVER (PARTITION BY entity_type, entity_id ORDER BY changed_at DESC) as rn
-                    FROM status_history
-                ) sh2 ON sh1.entity_type = sh2.entity_type 
-                     AND sh1.entity_id = sh2.entity_id
-                WHERE sh2.rn > 1000
-            """;
+            String cleanupQuery = "DELETE sh1 FROM status_history sh1 " +
+                "INNER JOIN (" +
+                "SELECT entity_type, entity_id, " +
+                "ROW_NUMBER() OVER (PARTITION BY entity_type, entity_id ORDER BY changed_at DESC) as rn " +
+                "FROM status_history" +
+                ") sh2 ON sh1.entity_type = sh2.entity_type " +
+                "AND sh1.entity_id = sh2.entity_id " +
+                "WHERE sh2.rn > 1000";
             
             stmt.executeUpdate(cleanupQuery);
             stmt.close();

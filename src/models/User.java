@@ -123,7 +123,7 @@ public class User extends BaseEntity {
      * Gets hashed password (protected access for database operations)
      * @return Hashed password
      */
-    protected String getHashedPassword() {
+    public String getHashedPassword() {
         return password;
     }
     

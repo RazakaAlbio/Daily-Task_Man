@@ -12,6 +12,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * Task management panel for viewing and managing tasks
@@ -374,7 +376,7 @@ public class TaskManagementPanel extends JPanel {
                 task.getPriority(),
                 task.getProject() != null ? task.getProject().getName() : "No Project",
                 task.getAssignedUser() != null ? task.getAssignedUser().getFullName() : "Unassigned",
-                task.getAssigner() != null ? task.getAssigner().getFullName() : "Unknown",
+                task.getAssignedBy() != null ? task.getAssignedBy().getFullName() : "Unknown",
                 task.getDueDate() != null ? task.getDueDate().format(dateFormatter) : "No Due Date",
                 task.getCreatedAt().format(formatter),
                 task.getUpdatedAt().format(formatter)
@@ -434,14 +436,14 @@ public class TaskManagementPanel extends JPanel {
                             return task.getAssignedUser() == null;
                         } else if ("My Tasks".equals(assigneeText)) {
                             return task.getAssignedUser() != null && 
-                                   task.getAssignedUser().getId().equals(currentUser.getId());
+                                   task.getAssignedUser().getId() == currentUser.getId();
                         } else if (!"All Assignees".equals(assigneeText)) {
                             return task.getAssignedUser() != null && 
                                    task.getAssignedUser().getFullName().equals(assigneeText);
                         }
                         return true;
                     })
-                    .toList();
+                    .collect(Collectors.toList());
             }
             
             @Override
@@ -508,7 +510,7 @@ public class TaskManagementPanel extends JPanel {
         SwingWorker<Task, Void> worker = new SwingWorker<Task, Void>() {
             @Override
             protected Task doInBackground() throws Exception {
-                return taskDAO.findById(taskId);
+                return taskDAO.findById(taskId.intValue());
             }
             
             @Override
@@ -542,7 +544,7 @@ public class TaskManagementPanel extends JPanel {
         SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
             @Override
             protected Boolean doInBackground() throws Exception {
-                return taskDAO.update(task);
+                return taskDAO.save(task);
             }
             
             @Override
@@ -587,7 +589,7 @@ public class TaskManagementPanel extends JPanel {
             SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
                 @Override
                 protected Boolean doInBackground() throws Exception {
-                    return taskDAO.delete(taskId);
+                    return taskDAO.deleteById(taskId.intValue());
                 }
                 
                 @Override

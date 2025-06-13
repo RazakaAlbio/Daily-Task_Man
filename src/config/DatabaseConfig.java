@@ -59,52 +59,46 @@ public class DatabaseConfig {
             stmt.executeUpdate("USE task_manager");
             
             // Create users table
-            String createUsersTable = """
-                CREATE TABLE IF NOT EXISTS users (
-                    id INT PRIMARY KEY AUTO_INCREMENT,
-                    username VARCHAR(50) UNIQUE NOT NULL,
-                    password VARCHAR(255) NOT NULL,
-                    email VARCHAR(100) UNIQUE NOT NULL,
-                    role ENUM('ADMIN', 'MANAGER', 'EMPLOYEE') NOT NULL,
-                    full_name VARCHAR(100) NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-                )
-            """;
+            String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
+                "id INT PRIMARY KEY AUTO_INCREMENT," +
+                "username VARCHAR(50) UNIQUE NOT NULL," +
+                "password VARCHAR(255) NOT NULL," +
+                "email VARCHAR(100) UNIQUE NOT NULL," +
+                "role ENUM('ADMIN', 'MANAGER', 'EMPLOYEE') NOT NULL," +
+                "full_name VARCHAR(100) NOT NULL," +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP" +
+                ")";
             
             // Create projects table
-            String createProjectsTable = """
-                CREATE TABLE IF NOT EXISTS projects (
-                    id INT PRIMARY KEY AUTO_INCREMENT,
-                    name VARCHAR(100) NOT NULL,
-                    description TEXT,
-                    status ENUM('ACTIVE', 'COMPLETED', 'PAUSED') DEFAULT 'ACTIVE',
-                    created_by INT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    FOREIGN KEY (created_by) REFERENCES users(id)
-                )
-            """;
+            String createProjectsTable = "CREATE TABLE IF NOT EXISTS projects (" +
+                "id INT PRIMARY KEY AUTO_INCREMENT," +
+                "name VARCHAR(100) NOT NULL," +
+                "description TEXT," +
+                "status ENUM('ACTIVE', 'COMPLETED', 'PAUSED') DEFAULT 'ACTIVE'," +
+                "created_by INT," +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+                "FOREIGN KEY (created_by) REFERENCES users(id)" +
+                ")";
             
             // Create tasks table
-            String createTasksTable = """
-                CREATE TABLE IF NOT EXISTS tasks (
-                    id INT PRIMARY KEY AUTO_INCREMENT,
-                    title VARCHAR(200) NOT NULL,
-                    description TEXT,
-                    status ENUM('TODO', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED') DEFAULT 'TODO',
-                    priority ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT') DEFAULT 'MEDIUM',
-                    project_id INT,
-                    assigned_to INT,
-                    assigned_by INT,
-                    due_date DATE,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                    FOREIGN KEY (project_id) REFERENCES projects(id),
-                    FOREIGN KEY (assigned_to) REFERENCES users(id),
-                    FOREIGN KEY (assigned_by) REFERENCES users(id)
-                )
-            """;
+            String createTasksTable = "CREATE TABLE IF NOT EXISTS tasks (" +
+                "id INT PRIMARY KEY AUTO_INCREMENT," +
+                "title VARCHAR(200) NOT NULL," +
+                "description TEXT," +
+                "status ENUM('TODO', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED') DEFAULT 'TODO'," +
+                "priority ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT') DEFAULT 'MEDIUM'," +
+                "project_id INT," +
+                "assigned_to INT," +
+                "assigned_by INT," +
+                "due_date DATE," +
+                "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+                "FOREIGN KEY (project_id) REFERENCES projects(id)," +
+                "FOREIGN KEY (assigned_to) REFERENCES users(id)," +
+                "FOREIGN KEY (assigned_by) REFERENCES users(id)" +
+                ")";
             
             stmt.executeUpdate(createUsersTable);
             stmt.executeUpdate(createProjectsTable);

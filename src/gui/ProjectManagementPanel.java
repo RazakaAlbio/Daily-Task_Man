@@ -12,6 +12,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * Project management panel for viewing and managing projects
@@ -359,7 +361,7 @@ public class ProjectManagementPanel extends JPanel {
                         }
                         return true;
                     })
-                    .toList();
+                    .collect(Collectors.toList());
             }
             
             @Override
@@ -426,7 +428,7 @@ public class ProjectManagementPanel extends JPanel {
         SwingWorker<Project, Void> worker = new SwingWorker<Project, Void>() {
             @Override
             protected Project doInBackground() throws Exception {
-                return projectDAO.findById(projectId);
+                return projectDAO.findById(projectId.intValue());
             }
             
             @Override
@@ -460,7 +462,7 @@ public class ProjectManagementPanel extends JPanel {
         SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
             @Override
             protected Boolean doInBackground() throws Exception {
-                return projectDAO.update(project);
+                return projectDAO.save(project);
             }
             
             @Override
@@ -506,7 +508,7 @@ public class ProjectManagementPanel extends JPanel {
             SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
                 @Override
                 protected Boolean doInBackground() throws Exception {
-                    return projectDAO.delete(projectId);
+                    return projectDAO.deleteById(projectId.intValue());
                 }
                 
                 @Override
@@ -626,14 +628,15 @@ public class ProjectManagementPanel extends JPanel {
                         case COMPLETED:
                             setForeground(TaskManagerApp.SUCCESS_COLOR);
                             break;
-                        case ON_HOLD:
+                        case PAUSED:
                             setForeground(TaskManagerApp.SECONDARY_COLOR);
                             break;
-                        case CANCELLED:
-                            setForeground(TaskManagerApp.DANGER_COLOR);
+                        case ACTIVE:
+                            setForeground(TaskManagerApp.PRIMARY_COLOR);
                             break;
                         default:
                             setForeground(TaskManagerApp.TEXT_PRIMARY);
+                            break;
                     }
                 } else {
                     setForeground(TaskManagerApp.TEXT_PRIMARY);

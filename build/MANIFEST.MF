@@ -1,0 +1,3 @@
+Main-Class: Main 
+Class-Path: . C:\xampp\htdocs\pbo\UAS\lib\mysql-connector-j-8.2.0.jar 
+ 

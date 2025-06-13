@@ -404,15 +404,13 @@ public class TaskDAO extends BaseDAO<Task> {
      * @return Array containing [totalTasks, todoTasks, inProgressTasks, completedTasks, overdueTasks]
      */
     public int[] getTaskStatistics() {
-        String sql = """
-            SELECT 
-                COUNT(*) as total_tasks,
-                SUM(CASE WHEN status = 'TODO' THEN 1 ELSE 0 END) as todo_tasks,
-                SUM(CASE WHEN status = 'IN_PROGRESS' THEN 1 ELSE 0 END) as in_progress_tasks,
-                SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_tasks,
-                SUM(CASE WHEN due_date < CURDATE() AND status NOT IN ('COMPLETED', 'CANCELLED') THEN 1 ELSE 0 END) as overdue_tasks
-            FROM tasks
-        """;
+        String sql = "SELECT " +
+            "COUNT(*) as total_tasks," +
+            "SUM(CASE WHEN status = 'TODO' THEN 1 ELSE 0 END) as todo_tasks," +
+            "SUM(CASE WHEN status = 'IN_PROGRESS' THEN 1 ELSE 0 END) as in_progress_tasks," +
+            "SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_tasks," +
+            "SUM(CASE WHEN due_date < CURDATE() AND status NOT IN ('COMPLETED', 'CANCELLED') THEN 1 ELSE 0 END) as overdue_tasks " +
+            "FROM tasks";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
@@ -438,14 +436,12 @@ public class TaskDAO extends BaseDAO<Task> {
      * @return Array containing [assignedTasks, completedTasks, overdueTasks]
      */
     public int[] getUserTaskStatistics(int userId) {
-        String sql = """
-            SELECT 
-                COUNT(*) as assigned_tasks,
-                SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_tasks,
-                SUM(CASE WHEN due_date < CURDATE() AND status NOT IN ('COMPLETED', 'CANCELLED') THEN 1 ELSE 0 END) as overdue_tasks
-            FROM tasks
-            WHERE assigned_to = ?
-        """;
+        String sql = "SELECT " +
+            "COUNT(*) as assigned_tasks," +
+            "SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_tasks," +
+            "SUM(CASE WHEN due_date < CURDATE() AND status NOT IN ('COMPLETED', 'CANCELLED') THEN 1 ELSE 0 END) as overdue_tasks " +
+            "FROM tasks " +
+            "WHERE assigned_to = ?";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, userId);

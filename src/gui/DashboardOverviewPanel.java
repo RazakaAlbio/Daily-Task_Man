@@ -5,6 +5,7 @@ import models.*;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Map;
 
 /**
@@ -157,28 +158,28 @@ public class DashboardOverviewPanel extends JPanel {
         List<Task> completedTasks = taskDAO.findByAssignedUser(currentUser.getId())
             .stream()
             .filter(task -> task.getStatus() == Task.Status.DONE)
-            .toList();
+            .collect(Collectors.toList());
         addStatItem(panel, "Completed", String.valueOf(completedTasks.size()), TaskManagerApp.SUCCESS_COLOR);
         
         // In progress tasks
         List<Task> inProgressTasks = taskDAO.findByAssignedUser(currentUser.getId())
             .stream()
             .filter(task -> task.getStatus() == Task.Status.IN_PROGRESS)
-            .toList();
+            .collect(Collectors.toList());
         addStatItem(panel, "In Progress", String.valueOf(inProgressTasks.size()), TaskManagerApp.WARNING_COLOR);
         
         // Overdue tasks
         List<Task> overdueTasks = taskDAO.findOverdueTasks()
             .stream()
-            .filter(task -> task.getAssignedUser() != null && task.getAssignedUser().getId().equals(currentUser.getId()))
-            .toList();
+            .filter(task -> task.getAssignedUser() != null && task.getAssignedUser().getId() == currentUser.getId())
+            .collect(Collectors.toList());
         addStatItem(panel, "Overdue", String.valueOf(overdueTasks.size()), TaskManagerApp.DANGER_COLOR);
         
         // Tasks due today
         List<Task> tasksDueToday = taskDAO.findTasksDueToday()
             .stream()
-            .filter(task -> task.getAssignedUser() != null && task.getAssignedUser().getId().equals(currentUser.getId()))
-            .toList();
+            .filter(task -> task.getAssignedUser() != null && task.getAssignedUser().getId() == currentUser.getId())
+            .collect(Collectors.toList());
         addStatItem(panel, "Due Today", String.valueOf(tasksDueToday.size()), TaskManagerApp.INFO_COLOR);
     }
     
@@ -230,12 +231,12 @@ public class DashboardOverviewPanel extends JPanel {
                 recentTasks = taskDAO.findAll().stream()
                     .sorted((t1, t2) -> t2.getUpdatedAt().compareTo(t1.getUpdatedAt()))
                     .limit(10)
-                    .toList();
+                    .collect(Collectors.toList());
             } else {
                 recentTasks = taskDAO.findByAssignedUser(currentUser.getId()).stream()
                     .sorted((t1, t2) -> t2.getUpdatedAt().compareTo(t1.getUpdatedAt()))
                     .limit(10)
-                    .toList();
+                    .collect(Collectors.toList());
             }
             
             if (recentTasks.isEmpty()) {

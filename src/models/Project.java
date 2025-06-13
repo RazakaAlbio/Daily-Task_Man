@@ -15,7 +15,9 @@ public class Project extends BaseEntity implements Trackable {
      * Enum for project status
      */
     public enum Status {
+        PLANNING("Planning", true),
         ACTIVE("Active", true),
+        IN_PROGRESS("In Progress", true),
         COMPLETED("Completed", false),
         PAUSED("Paused", true);
         
@@ -122,6 +124,15 @@ public class Project extends BaseEntity implements Trackable {
     
     public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
+    }
+    
+    // Alias methods for compatibility
+    public User getCreator() {
+        return createdBy;
+    }
+    
+    public void setCreator(User creator) {
+        this.createdBy = creator;
     }
     
     /**

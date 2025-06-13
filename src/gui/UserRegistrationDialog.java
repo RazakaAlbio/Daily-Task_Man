@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 public class UserRegistrationDialog extends JDialog {
     
     private UserDAO userDAO;
+    private boolean registrationSuccessful = false;
     
     // GUI Components
     private JTextField usernameField;
@@ -239,6 +240,7 @@ public class UserRegistrationDialog extends JDialog {
                 try {
                     Boolean success = get();
                     if (success) {
+                        registrationSuccessful = true;
                         showStatus("User registered successfully!", TaskManagerApp.SUCCESS_COLOR);
                         
                         // Close dialog after 2 seconds
@@ -344,5 +346,13 @@ public class UserRegistrationDialog extends JDialog {
     private void showStatus(String message, Color color) {
         statusLabel.setText(message);
         statusLabel.setForeground(color);
+    }
+    
+    /**
+     * Checks if registration was successful
+     * @return true if registration was successful, false otherwise
+     */
+    public boolean isRegistrationSuccessful() {
+        return registrationSuccessful;
     }
 }

@@ -10,6 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * User management panel for viewing and managing users (Admin only)
@@ -355,7 +356,7 @@ public class UserManagementPanel extends JPanel {
                         }
                         return true;
                     })
-                    .toList();
+                    .collect(Collectors.toList());
             }
             
             @Override
@@ -378,7 +379,7 @@ public class UserManagementPanel extends JPanel {
      */
     private void createUser() {
         UserRegistrationDialog dialog = new UserRegistrationDialog(
-            SwingUtilities.getWindowAncestor(this), userDAO);
+            (Frame) SwingUtilities.getWindowAncestor(this), userDAO);
         dialog.setVisible(true);
         
         if (dialog.isRegistrationSuccessful()) {
@@ -399,7 +400,7 @@ public class UserManagementPanel extends JPanel {
         SwingWorker<User, Void> worker = new SwingWorker<User, Void>() {
             @Override
             protected User doInBackground() throws Exception {
-                return userDAO.findById(userId);
+                return userDAO.findById(userId.intValue());
             }
             
             @Override
@@ -437,7 +438,7 @@ public class UserManagementPanel extends JPanel {
         Long userId = (Long) tableModel.getValueAt(selectedRow, 0);
         
         // Don't allow deleting current user
-        if (userId.equals(currentUser.getId())) {
+        if (userId.intValue() == currentUser.getId()) {
             showErrorMessage("You cannot delete your own account");
             return;
         }
@@ -455,7 +456,7 @@ public class UserManagementPanel extends JPanel {
             SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
                 @Override
                 protected Boolean doInBackground() throws Exception {
-                    return userDAO.delete(userId);
+                    return userDAO.deleteById(userId.intValue());
                 }
                 
                 @Override
@@ -504,7 +505,7 @@ public class UserManagementPanel extends JPanel {
             SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
                 @Override
                 protected Boolean doInBackground() throws Exception {
-                    return userDAO.updatePassword(userId, newPassword);
+                    return userDAO.updatePassword(userId.intValue(), newPassword);
                 }
                 
                 @Override

@@ -283,7 +283,7 @@ public class TaskDialog extends JDialog {
                 projects = projectDAO.findAll();
             } else {
                 // Managers and employees see projects they created or are involved in
-                projects = projectDAO.findByCreator(currentUser.getId());
+                projects = projectDAO.findByCreatedBy(currentUser.getId());
             }
             
             for (Project project : projects) {
@@ -363,7 +363,7 @@ public class TaskDialog extends JDialog {
         if (task.getProject() != null) {
             for (int i = 0; i < projectCombo.getItemCount(); i++) {
                 Project project = projectCombo.getItemAt(i);
-                if (project != null && project.getId().equals(task.getProject().getId())) {
+                if (project != null && project.getId() == task.getProject().getId()) {
                     projectCombo.setSelectedIndex(i);
                     break;
                 }
@@ -374,7 +374,7 @@ public class TaskDialog extends JDialog {
         if (canAssignTasks() && task.getAssignedUser() != null) {
             for (int i = 0; i < assigneeCombo.getItemCount(); i++) {
                 User user = assigneeCombo.getItemAt(i);
-                if (user != null && user.getId().equals(task.getAssignedUser().getId())) {
+                if (user != null && user.getId() == task.getAssignedUser().getId()) {
                     assigneeCombo.setSelectedIndex(i);
                     break;
                 }
@@ -401,8 +401,6 @@ public class TaskDialog extends JDialog {
                 if (task == null) {
                     // Create new task
                     task = new Task();
-                    task.setCreatedBy(currentUser);
-                    task.setAssigner(currentUser);
                 }
                 
                 // Set task properties
@@ -415,9 +413,8 @@ public class TaskDialog extends JDialog {
                 // Set assignee (only for admin/manager)
                 if (canAssignTasks()) {
                     User selectedUser = (User) assigneeCombo.getSelectedItem();
-                    task.setAssignedUser(selectedUser);
                     if (selectedUser != null) {
-                        task.setAssigner(currentUser);
+                        task.assignTo(selectedUser, currentUser);
                     }
                 }
                 

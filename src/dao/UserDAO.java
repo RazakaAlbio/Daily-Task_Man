@@ -34,7 +34,7 @@ public class UserDAO extends BaseDAO<User> {
         User user = new User(
             rs.getInt("id"),
             rs.getString("username"),
-            rs.getString("password"), // Already hashed
+            rs.getString("password_hash"), // Already hashed
             rs.getString("email"),
             User.Role.valueOf(rs.getString("role")),
             rs.getString("full_name")
@@ -53,7 +53,7 @@ public class UserDAO extends BaseDAO<User> {
      */
     @Override
     protected String getInsertSQL() {
-        return "INSERT INTO users (username, password, email, role, full_name) VALUES (?, ?, ?, ?, ?)";
+        return "INSERT INTO users (username, password_hash, email, role, full_name) VALUES (?, ?, ?, ?, ?)";
     }
     
     /**
@@ -62,7 +62,7 @@ public class UserDAO extends BaseDAO<User> {
      */
     @Override
     protected String getUpdateSQL() {
-        return "UPDATE users SET username = ?, password = ?, email = ?, role = ?, full_name = ? WHERE id = ?";
+        return "UPDATE users SET username = ?, password_hash = ?, email = ?, role = ?, full_name = ? WHERE id = ?";
     }
     
     /**

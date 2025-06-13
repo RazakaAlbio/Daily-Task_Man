@@ -244,7 +244,7 @@ public class UserEditDialog extends JDialog {
                 user.setRole((User.Role) roleCombo.getSelectedItem());
                 
                 // Save to database
-                return userDAO.update(user);
+                return userDAO.save(user);
             }
             
             @Override

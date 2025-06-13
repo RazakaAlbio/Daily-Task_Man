@@ -5,6 +5,7 @@ import dao.UserDAO;
 import models.User;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -28,10 +29,12 @@ public class TaskManagerApp extends JFrame {
     public static final Color TEXT_PRIMARY = new Color(15, 23, 42);        // Dark gray
     public static final Color TEXT_SECONDARY = new Color(100, 116, 139);   // Medium gray
     public static final Color BORDER_COLOR = new Color(226, 232, 240);     // Light border
+    public static final Color INFO_COLOR = new Color(59, 130, 246);        // Info blue
     
     // Application fonts
     public static final Font TITLE_FONT = new Font("Segoe UI", Font.BOLD, 24);
     public static final Font HEADING_FONT = new Font("Segoe UI", Font.BOLD, 18);
+    public static final Font HEADER_FONT = new Font("Segoe UI", Font.BOLD, 20);
     public static final Font BODY_FONT = new Font("Segoe UI", Font.PLAIN, 14);
     public static final Font SMALL_FONT = new Font("Segoe UI", Font.PLAIN, 12);
     
@@ -56,7 +59,7 @@ public class TaskManagerApp extends JFrame {
     private void initializeApplication() {
         // Set system look and feel for better appearance
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeel());
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             System.err.println("Could not set system look and feel: " + e.getMessage());
         }

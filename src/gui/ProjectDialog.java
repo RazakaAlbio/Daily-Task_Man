@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Dialog for creating and editing projects
@@ -223,7 +224,7 @@ public class ProjectDialog extends JDialog {
             // Filter to show only admin and manager users
             List<User> eligibleUsers = users.stream()
                 .filter(user -> user.getRole() == User.Role.ADMIN || user.getRole() == User.Role.MANAGER)
-                .toList();
+                .collect(Collectors.toList());
             
             for (User user : eligibleUsers) {
                 creatorComboBox.addItem(user);

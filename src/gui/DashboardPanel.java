@@ -382,7 +382,7 @@ public class DashboardPanel extends JPanel {
         SwingWorker<JPanel, Void> worker = new SwingWorker<JPanel, Void>() {
             @Override
             protected JPanel doInBackground() throws Exception {
-                return new UserManagementPanel(currentUser, userDAO, taskDAO);
+                return new UserManagementPanel(currentUser, userDAO);
             }
             
             @Override
@@ -467,5 +467,30 @@ public class DashboardPanel extends JPanel {
      */
     public User getCurrentUser() {
         return currentUser;
+    }
+    
+    /**
+     * Updates the current user
+     * @param user New current user
+     */
+    public void updateUser(User user) {
+        this.currentUser = user;
+        updateWelcomeMessage();
+    }
+    
+    /**
+     * Refreshes all data in the dashboard
+     */
+    public void refreshData() {
+        showDashboardView();
+    }
+    
+    /**
+     * Updates the welcome message for the current user
+     */
+    private void updateWelcomeMessage() {
+        if (welcomeLabel != null && currentUser != null) {
+            welcomeLabel.setText("Welcome, " + currentUser.getDisplayName() + "!");
+        }
     }
 }
