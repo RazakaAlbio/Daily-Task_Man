@@ -196,15 +196,15 @@ GROUP BY u.id, u.username, u.full_name, u.role;
 
 -- Insert default admin user (password: admin123)
 INSERT INTO users (username, password_hash, email, full_name, role, created_by, updated_by) VALUES
-('admin', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBPj.3xKqKzJGu', 'admin@company.com', 'System Administrator', 'ADMIN', 1, 1);
+('admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'admin@company.com', 'System Administrator', 'ADMIN', 1, 1);
 
--- Insert sample users
+-- Insert sample users (password: admin123 for all)
 INSERT INTO users (username, password_hash, email, full_name, role, created_by, updated_by) VALUES
-('manager1', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBPj.3xKqKzJGu', 'manager1@company.com', 'John Manager', 'MANAGER', 1, 1),
-('manager2', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBPj.3xKqKzJGu', 'manager2@company.com', 'Sarah Manager', 'MANAGER', 1, 1),
-('employee1', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBPj.3xKqKzJGu', 'employee1@company.com', 'Alice Employee', 'EMPLOYEE', 1, 1),
-('employee2', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBPj.3xKqKzJGu', 'employee2@company.com', 'Bob Employee', 'EMPLOYEE', 1, 1),
-('employee3', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewfBPj.3xKqKzJGu', 'employee3@company.com', 'Charlie Employee', 'EMPLOYEE', 1, 1);
+('manager1', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'manager1@company.com', 'John Manager', 'MANAGER', 1, 1),
+('manager2', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'manager2@company.com', 'Sarah Manager', 'MANAGER', 1, 1),
+('employee1', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'employee1@company.com', 'Alice Employee', 'EMPLOYEE', 1, 1),
+('employee2', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'employee2@company.com', 'Bob Employee', 'EMPLOYEE', 1, 1),
+('employee3', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'employee3@company.com', 'Charlie Employee', 'EMPLOYEE', 1, 1);
 
 -- Insert sample projects
 INSERT INTO projects (name, description, status, priority, start_date, end_date, creator_id, progress_percentage, budget, created_by, updated_by) VALUES

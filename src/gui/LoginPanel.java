@@ -22,7 +22,6 @@ public class LoginPanel extends JPanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
-    private JButton registerButton;
     private JLabel statusLabel;
     private JCheckBox showPasswordCheckBox;
     
@@ -46,6 +45,7 @@ public class LoginPanel extends JPanel {
     private void setupPanel() {
         setLayout(new BorderLayout());
         setBackground(TaskManagerApp.BACKGROUND_COLOR);
+        setPreferredSize(new Dimension(1000, 700));
     }
     
     /**
@@ -54,31 +54,26 @@ public class LoginPanel extends JPanel {
     private void createComponents() {
         // Create text fields
         usernameField = TaskManagerApp.createStyledTextField();
-        usernameField.setPreferredSize(new Dimension(300, 40));
+        usernameField.setPreferredSize(new Dimension(250, 35));
         
         passwordField = TaskManagerApp.createStyledPasswordField();
-        passwordField.setPreferredSize(new Dimension(300, 40));
+        passwordField.setPreferredSize(new Dimension(250, 35));
         
-        // Create buttons
+        // Create login button
         loginButton = TaskManagerApp.createStyledButton(
-            "Login", 
+            "LOGIN", 
             TaskManagerApp.PRIMARY_COLOR, 
             Color.WHITE
         );
-        loginButton.setPreferredSize(new Dimension(300, 45));
+        loginButton.setPreferredSize(new Dimension(250, 45));
         
-        registerButton = TaskManagerApp.createStyledButton(
-            "Register New User", 
-            TaskManagerApp.SECONDARY_COLOR, 
-            Color.WHITE
-        );
-        registerButton.setPreferredSize(new Dimension(300, 45));
+        // Register button removed - only admin can access registration
         
         // Create show password checkbox
         showPasswordCheckBox = new JCheckBox("Show Password");
-        showPasswordCheckBox.setFont(TaskManagerApp.SMALL_FONT);
+        showPasswordCheckBox.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         showPasswordCheckBox.setBackground(Color.WHITE);
-        showPasswordCheckBox.setForeground(TaskManagerApp.TEXT_SECONDARY);
+        showPasswordCheckBox.setForeground(TaskManagerApp.TEXT_PRIMARY);
         
         // Create status label
         statusLabel = new JLabel(" ");
@@ -98,7 +93,11 @@ public class LoginPanel extends JPanel {
         // Create login card
         JPanel loginCard = TaskManagerApp.createStyledPanel(null);
         loginCard.setLayout(new BoxLayout(loginCard, BoxLayout.Y_AXIS));
-        loginCard.setPreferredSize(new Dimension(400, 500));
+        loginCard.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(156, 163, 175), 2),
+            BorderFactory.createEmptyBorder(50, 50, 50, 50)
+        ));
+        loginCard.setPreferredSize(new Dimension(450, 550));
         
         // Title section
         JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -118,39 +117,36 @@ public class LoginPanel extends JPanel {
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
         formPanel.setBackground(Color.WHITE);
-        formPanel.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(25, 35, 25, 35));
         
         // Username field
         JLabel usernameLabel = new JLabel("Username:");
-        usernameLabel.setFont(TaskManagerApp.BODY_FONT);
+        usernameLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         usernameLabel.setForeground(TaskManagerApp.TEXT_PRIMARY);
-        usernameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        usernameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        usernameField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        usernameField.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         // Password field
         JLabel passwordLabel = new JLabel("Password:");
-        passwordLabel.setFont(TaskManagerApp.BODY_FONT);
+        passwordLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         passwordLabel.setForeground(TaskManagerApp.TEXT_PRIMARY);
-        passwordLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        passwordLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        passwordField.setAlignmentX(Component.LEFT_ALIGNMENT);
-        showPasswordCheckBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        passwordField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        showPasswordCheckBox.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         // Button panel
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
         buttonPanel.setBackground(Color.WHITE);
-        buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        buttonPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        loginButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-        registerButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-        statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         buttonPanel.add(loginButton);
-        buttonPanel.add(Box.createVerticalStrut(10));
-        buttonPanel.add(registerButton);
-        buttonPanel.add(Box.createVerticalStrut(10));
+        buttonPanel.add(Box.createVerticalStrut(20));
         buttonPanel.add(statusLabel);
         
         // Add components to form panel
@@ -203,28 +199,28 @@ public class LoginPanel extends JPanel {
         infoPanel.setPreferredSize(new Dimension(300, 200));
         
         JLabel infoTitle = new JLabel("For testing purposes:");
-        infoTitle.setFont(TaskManagerApp.BODY_FONT);
+        infoTitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         infoTitle.setForeground(TaskManagerApp.TEXT_PRIMARY);
         infoTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         JLabel adminLabel = new JLabel("Admin Account:");
-        adminLabel.setFont(TaskManagerApp.BODY_FONT.deriveFont(Font.BOLD));
-        adminLabel.setForeground(TaskManagerApp.TEXT_PRIMARY);
+        adminLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        adminLabel.setForeground(TaskManagerApp.PRIMARY_COLOR);
         adminLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         JLabel adminUser = new JLabel("Username: admin");
-        adminUser.setFont(TaskManagerApp.SMALL_FONT);
-        adminUser.setForeground(TaskManagerApp.TEXT_SECONDARY);
+        adminUser.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        adminUser.setForeground(TaskManagerApp.TEXT_PRIMARY);
         adminUser.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         JLabel adminPass = new JLabel("Password: admin123");
-        adminPass.setFont(TaskManagerApp.SMALL_FONT);
-        adminPass.setForeground(TaskManagerApp.TEXT_SECONDARY);
+        adminPass.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        adminPass.setForeground(TaskManagerApp.TEXT_PRIMARY);
         adminPass.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         JLabel noteLabel = new JLabel("Note: You can register new users");
-        noteLabel.setFont(TaskManagerApp.SMALL_FONT);
-        noteLabel.setForeground(TaskManagerApp.WARNING_COLOR.darker());
+        noteLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        noteLabel.setForeground(TaskManagerApp.SUCCESS_COLOR.darker());
         noteLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         infoPanel.add(infoTitle);
@@ -251,13 +247,7 @@ public class LoginPanel extends JPanel {
             }
         });
         
-        // Register button action
-        registerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showRegistrationDialog();
-            }
-        });
+        // Register button removed - only admin can access registration
         
         // Show password checkbox
         showPasswordCheckBox.addActionListener(new ActionListener() {

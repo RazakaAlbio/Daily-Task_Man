@@ -247,12 +247,16 @@ public class TaskManagerApp extends JFrame {
      */
     public static JButton createStyledButton(String text, Color backgroundColor, Color textColor) {
         JButton button = new JButton(text);
-        button.setFont(BODY_FONT);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 16));
         button.setBackground(backgroundColor);
-        button.setForeground(textColor);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        button.setForeground(Color.BLACK);
+        button.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.BLACK, 3),
+            BorderFactory.createEmptyBorder(15, 30, 15, 30)
+        ));
         button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setOpaque(true);
         
         // Add hover effect
         button.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -261,11 +265,19 @@ public class TaskManagerApp extends JFrame {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 button.setBackground(backgroundColor.darker());
+                button.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(Color.BLACK, 3),
+                    BorderFactory.createEmptyBorder(15, 30, 15, 30)
+                ));
             }
             
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
                 button.setBackground(originalColor);
+                button.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(Color.BLACK, 3),
+                    BorderFactory.createEmptyBorder(15, 30, 15, 30)
+                ));
             }
         });
         
@@ -309,11 +321,13 @@ public class TaskManagerApp extends JFrame {
     public static JTextField createStyledTextField() {
         JTextField textField = new JTextField();
         textField.setFont(BODY_FONT);
+        textField.setForeground(TEXT_PRIMARY);
+        textField.setBackground(Color.WHITE);
         textField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COLOR, 1),
+            BorderFactory.createLineBorder(new Color(156, 163, 175), 2),
             BorderFactory.createEmptyBorder(8, 12, 8, 12)
         ));
-        textField.setPreferredSize(new Dimension(200, 35));
+        textField.setPreferredSize(new Dimension(300, 40));
         return textField;
     }
     
@@ -324,11 +338,13 @@ public class TaskManagerApp extends JFrame {
     public static JPasswordField createStyledPasswordField() {
         JPasswordField passwordField = new JPasswordField();
         passwordField.setFont(BODY_FONT);
+        passwordField.setForeground(TEXT_PRIMARY);
+        passwordField.setBackground(Color.WHITE);
         passwordField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COLOR, 1),
+            BorderFactory.createLineBorder(new Color(156, 163, 175), 2),
             BorderFactory.createEmptyBorder(8, 12, 8, 12)
         ));
-        passwordField.setPreferredSize(new Dimension(200, 35));
+        passwordField.setPreferredSize(new Dimension(300, 40));
         return passwordField;
     }
     

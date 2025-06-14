@@ -1,11 +1,11 @@
 package dao;
 
-import models.User;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import models.User;
 
 /**
  * UserDAO class extending BaseDAO
@@ -171,9 +171,18 @@ public class UserDAO extends BaseDAO<User> {
      * @return User object if authentication successful, null otherwise
      */
     public User authenticate(String username, String password) {
+        System.out.println("Authenticating user: " + username);
         User user = findByUsername(username);
-        if (user != null && user.verifyPassword(password)) {
-            return user;
+        if (user != null) {
+            System.out.println("User found: " + user.getUsername());
+            System.out.println("Stored hash: " + user.getHashedPassword());
+            boolean passwordMatch = user.verifyPassword(password);
+            System.out.println("Password match: " + passwordMatch);
+            if (passwordMatch) {
+                return user;
+            }
+        } else {
+            System.out.println("User not found: " + username);
         }
         return null;
     }

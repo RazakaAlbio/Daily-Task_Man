@@ -1,5 +1,5 @@
-import gui.TaskManagerApp;
 import database.DatabaseManager;
+import gui.TaskManagerApp;
 import javax.swing.*;
 
 /**

@@ -4,10 +4,11 @@
 
 **Judul**: Task Manager Application
 
-**Deskripsi**: 
+**Deskripsi**:
 Task Manager adalah aplikasi manajemen tugas berbasis Java Swing yang dirancang untuk penggunaan internal perusahaan/organisasi. Aplikasi ini memungkinkan administrator dan manajer untuk mengelola proyek, menugaskan tugas kepada karyawan, dan melacak progress pekerjaan dengan menerapkan konsep Object-Oriented Programming (OOP) secara komprehensif.
 
 **Fitur Utama**:
+
 - Manajemen User dengan role-based access control (Admin, Manager, Employee)
 - Manajemen Proyek (create, read, update, delete)
 - Manajemen Tugas dengan assignment dan tracking
@@ -92,35 +93,39 @@ Task Manager adalah aplikasi manajemen tugas berbasis Java Swing yang dirancang 
 ### Objek Utama:
 
 **User Object**:
+
 - **State**: username, password, email, role, fullName
 - **Behavior**: authenticate, verifyPassword, setRole
 - **Hubungan**: User dapat memiliki banyak Task (assigned), User dapat membuat banyak Project
 
 **Project Object**:
+
 - **State**: name, description, status, creator
 - **Behavior**: updateStatus, isUpdatable, assign creator
 - **Hubungan**: Project memiliki banyak Task, Project dimiliki oleh satu User (creator)
 
 **Task Object**:
+
 - **State**: title, description, status, priority, assignedUser, project, dueDate
 - **Behavior**: assign, unassign, updateStatus, isAssigned
 - **Hubungan**: Task dimiliki oleh satu Project, Task dapat di-assign ke satu User
 
 ### Method Utama:
 
-| Class | Method | Fungsi |
-|-------|--------|---------|
-| User | `authenticate(username, password)` | Validasi login user |
-| User | `verifyPassword(password)` | Verifikasi password dengan hash |
-| Task | `assign(user, assigner)` | Menugaskan task ke user |
-| Task | `updateStatus(status, updatedBy)` | Update status task |
-| Project | `updateStatus(status, updatedBy)` | Update status project |
-| BaseDAO | `save(entity)` | Simpan atau update entity |
-| BaseDAO | `findById(id)` | Cari entity berdasarkan ID |
+| Class   | Method                             | Fungsi                          |
+| ------- | ---------------------------------- | ------------------------------- |
+| User    | `authenticate(username, password)` | Validasi login user             |
+| User    | `verifyPassword(password)`         | Verifikasi password dengan hash |
+| Task    | `assign(user, assigner)`           | Menugaskan task ke user         |
+| Task    | `updateStatus(status, updatedBy)`  | Update status task              |
+| Project | `updateStatus(status, updatedBy)`  | Update status project           |
+| BaseDAO | `save(entity)`                     | Simpan atau update entity       |
+| BaseDAO | `findById(id)`                     | Cari entity berdasarkan ID      |
 
 ### Variabel Instance (State):
 
 **BaseEntity**:
+
 - `protected Long id` - Primary key
 - `protected LocalDateTime createdAt` - Timestamp pembuatan
 - `protected LocalDateTime updatedAt` - Timestamp update terakhir
@@ -132,18 +137,19 @@ Task Manager adalah aplikasi manajemen tugas berbasis Java Swing yang dirancang 
 ### Penggunaan Access Modifier:
 
 **Private Fields dengan Public Getter/Setter**:
+
 ```java
 public class User extends BaseEntity {
     private String username;        // Private - hanya bisa diakses dalam class
     private String password;        // Private - sensitive data
     private String email;          // Private - data protection
     private Role role;             // Private - controlled access
-    
+
     // Public getter dengan validation
     public String getUsername() {
         return username;
     }
-    
+
     // Public setter dengan validation
     public void setUsername(String username) {
         if (username == null || username.trim().isEmpty()) {
@@ -155,6 +161,7 @@ public class User extends BaseEntity {
 ```
 
 **Protected Fields untuk Inheritance**:
+
 ```java
 public abstract class BaseEntity {
     protected Long id;              // Protected - akses untuk subclass
@@ -162,7 +169,7 @@ public abstract class BaseEntity {
     protected LocalDateTime updatedAt;
     protected Long createdBy;
     protected Long updatedBy;
-    
+
     // Protected method untuk subclass
     protected void updateTimestamp() {
         this.updatedAt = LocalDateTime.now();
@@ -171,6 +178,7 @@ public abstract class BaseEntity {
 ```
 
 **Package-Private untuk Utility**:
+
 ```java
 class DatabaseUtils {               // Package-private class
     static String formatDate(LocalDateTime date) {  // Package-private method
@@ -183,14 +191,14 @@ class DatabaseUtils {               // Package-private class
 
 ### Hubungan Pewarisan:
 
-| Superclass | Subclass | Relationship Type | Inherited Members |
-|------------|----------|-------------------|-------------------|
-| BaseEntity | User | IS-A | id, timestamps, CRUD methods |
-| BaseEntity | Project | IS-A | id, timestamps, CRUD methods |
-| BaseEntity | Task | IS-A | id, timestamps, CRUD methods |
-| BaseDAO<T> | UserDAO | IS-A | save(), findById(), generic CRUD |
-| BaseDAO<T> | ProjectDAO | IS-A | save(), findById(), generic CRUD |
-| BaseDAO<T> | TaskDAO | IS-A | save(), findById(), generic CRUD |
+| Superclass | Subclass   | Relationship Type | Inherited Members                |
+| ---------- | ---------- | ----------------- | -------------------------------- |
+| BaseEntity | User       | IS-A              | id, timestamps, CRUD methods     |
+| BaseEntity | Project    | IS-A              | id, timestamps, CRUD methods     |
+| BaseEntity | Task       | IS-A              | id, timestamps, CRUD methods     |
+| BaseDAO<T> | UserDAO    | IS-A              | save(), findById(), generic CRUD |
+| BaseDAO<T> | ProjectDAO | IS-A              | save(), findById(), generic CRUD |
+| BaseDAO<T> | TaskDAO    | IS-A              | save(), findById(), generic CRUD |
 
 ### Method Override Example:
 
@@ -200,7 +208,7 @@ public abstract class BaseEntity {
     public String toString() {
         return getClass().getSimpleName() + "[id=" + id + "]";
     }
-    
+
     public abstract boolean isValid();
 }
 
@@ -210,7 +218,7 @@ public class User extends BaseEntity {
     public String toString() {
         return "User[id=" + getId() + ", username=" + username + "]";
     }
-    
+
     @Override
     public boolean isValid() {
         return username != null && !username.isEmpty() &&
@@ -233,12 +241,14 @@ public class Task extends BaseEntity {
 ### IS-A dan HAS-A Relationships:
 
 **IS-A Relationships (Inheritance)**:
+
 - User IS-A BaseEntity
-- Project IS-A BaseEntity  
+- Project IS-A BaseEntity
 - Task IS-A BaseEntity
 - UserDAO IS-A BaseDAO
 
 **HAS-A Relationships (Composition/Aggregation)**:
+
 - Task HAS-A User (assignedUser)
 - Task HAS-A Project
 - Task HAS-A User (assigner)
@@ -249,12 +259,12 @@ public class Task extends BaseEntity {
 
 ### Penggunaan Access Level:
 
-| Modifier | Penggunaan | Alasan | Contoh |
-|----------|------------|--------|---------|
-| **private** | Fields sensitif, helper methods | Enkapsulasi data, hide implementation | `private String password` |
-| **protected** | BaseEntity fields, template methods | Akses untuk subclass inheritance | `protected Long id` |
-| **public** | API methods, constructors | Interface untuk client code | `public void save()` |
-| **default** | Package utilities, internal classes | Akses dalam package yang sama | `class DatabaseUtils` |
+| Modifier      | Penggunaan                          | Alasan                                | Contoh                    |
+| ------------- | ----------------------------------- | ------------------------------------- | ------------------------- |
+| **private**   | Fields sensitif, helper methods     | Enkapsulasi data, hide implementation | `private String password` |
+| **protected** | BaseEntity fields, template methods | Akses untuk subclass inheritance      | `protected Long id`       |
+| **public**    | API methods, constructors           | Interface untuk client code           | `public void save()`      |
+| **default**   | Package utilities, internal classes | Akses dalam package yang sama         | `class DatabaseUtils`     |
 
 ### Contoh Implementasi:
 
@@ -263,14 +273,14 @@ public class User extends BaseEntity {
     // Private - hanya dalam class ini
     private String password;
     private String hashPassword(String plainText) { ... }
-    
+
     // Protected - untuk subclass (jika ada)
     protected void validateEmail(String email) { ... }
-    
+
     // Public - interface untuk client
     public boolean verifyPassword(String password) { ... }
     public String getUsername() { ... }
-    
+
     // Package-private - untuk testing atau utility
     String getHashedPassword() { return password; }
 }
@@ -322,15 +332,15 @@ public class TaskDAO extends BaseDAO<Task> {
     public List<Task> findByStatus(Task.Status status) {
         return findByStatus(status.name());
     }
-    
+
     public List<Task> findByStatus(String status) {
         // Implementation with string parameter
     }
-    
+
     public List<Task> findByStatus(Task.Status status, int limit) {
         // Implementation with limit
     }
-    
+
     public List<Task> findByStatus(Task.Status status, User assignedUser) {
         // Implementation with assigned user filter
     }
@@ -342,23 +352,24 @@ public class TaskDAO extends BaseDAO<Task> {
 ### Abstract Classes:
 
 **BaseEntity (Abstract Class)**:
+
 ```java
 public abstract class BaseEntity {
     protected Long id;
     protected LocalDateTime createdAt;
     protected LocalDateTime updatedAt;
-    
+
     // Concrete methods - shared implementation
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    
+
     public void updateTimestamp() {
         this.updatedAt = LocalDateTime.now();
     }
-    
+
     // Abstract method - must be implemented by subclasses
     public abstract boolean isValid();
-    
+
     // Template method pattern
     public final boolean saveIfValid() {
         if (isValid()) {
@@ -371,10 +382,11 @@ public abstract class BaseEntity {
 ```
 
 **BaseDAO (Abstract Class)**:
+
 ```java
 public abstract class BaseDAO<T extends BaseEntity> {
     protected DatabaseManager dbManager;
-    
+
     // Template method - defines algorithm structure
     public boolean save(T entity) {
         if (entity.getId() == null) {
@@ -383,7 +395,7 @@ public abstract class BaseDAO<T extends BaseEntity> {
             return update(entity);  // Calls abstract method
         }
     }
-    
+
     // Abstract methods - implemented by subclasses
     protected abstract String getTableName();
     protected abstract T mapResultSetToEntity(ResultSet rs) throws SQLException;
@@ -409,7 +421,7 @@ public class UserDAO extends BaseDAO<User> {
     protected String getTableName() {
         return "users";
     }
-    
+
     @Override
     protected User mapResultSetToEntity(ResultSet rs) throws SQLException {
         return new User(
@@ -421,7 +433,7 @@ public class UserDAO extends BaseDAO<User> {
             rs.getString("full_name")
         );
     }
-    
+
     @Override
     protected String getInsertSQL() {
         return "INSERT INTO users (username, password_hash, email, role, full_name) VALUES (?, ?, ?, ?, ?)";
@@ -434,6 +446,7 @@ public class UserDAO extends BaseDAO<User> {
 ### Interface Definitions:
 
 **Assignable Interface**:
+
 ```java
 public interface Assignable {
     void assign(User user, User assigner);
@@ -446,6 +459,7 @@ public interface Assignable {
 ```
 
 **Trackable Interface**:
+
 ```java
 public interface Trackable {
     String getCurrentStatus();
@@ -470,7 +484,7 @@ public class Task extends BaseEntity implements Assignable, Trackable {
     private Project project;
     private LocalDateTime dueDate;
     private LocalDateTime assignedAt;
-    
+
     // Implementasi Assignable interface
     @Override
     public void assign(User user, User assigner) {
@@ -480,7 +494,7 @@ public class Task extends BaseEntity implements Assignable, Trackable {
         this.updatedAt = LocalDateTime.now();
         this.updatedBy = assigner.getId();
     }
-    
+
     @Override
     public void unassign() {
         this.assignedUser = null;
@@ -488,12 +502,12 @@ public class Task extends BaseEntity implements Assignable, Trackable {
         this.assignedAt = null;
         this.updatedAt = LocalDateTime.now();
     }
-    
+
     @Override
     public boolean isAssigned() {
         return assignedUser != null;
     }
-    
+
     // Implementasi Trackable interface
     @Override
     public void updateStatus(String newStatus, User updatedBy) {
@@ -501,12 +515,12 @@ public class Task extends BaseEntity implements Assignable, Trackable {
         this.updatedBy = updatedBy.getId();
         this.updatedAt = LocalDateTime.now();
     }
-    
+
     @Override
     public String getCurrentStatus() {
         return status.name();
     }
-    
+
     @Override
     public boolean isUpdatable() {
         return status != Status.COMPLETED && status != Status.CANCELLED;
@@ -522,7 +536,7 @@ public class Project extends BaseEntity implements Trackable {
     private String description;
     private Status status;
     private User creator;
-    
+
     // Implementasi Trackable interface
     @Override
     public void updateStatus(String newStatus, User updatedBy) {
@@ -530,12 +544,12 @@ public class Project extends BaseEntity implements Trackable {
         this.updatedBy = updatedBy.getId();
         this.updatedAt = LocalDateTime.now();
     }
-    
+
     @Override
     public String getCurrentStatus() {
         return status.name();
     }
-    
+
     @Override
     public boolean isUpdatable() {
         return status == Status.ACTIVE || status == Status.PAUSED;
@@ -606,9 +620,9 @@ public class DatabaseManager {
     private static final String URL = "jdbc:mysql://localhost:3306/task_manager";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "";
-    
+
     private Connection connection;
-    
+
     public DatabaseManager() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -620,18 +634,18 @@ public class DatabaseManager {
             throw new RuntimeException("Failed to initialize database", e);
         }
     }
-    
+
     public Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
         }
         return connection;
     }
-    
+
     private void createTables() {
         try {
             Statement stmt = connection.createStatement();
-            
+
             // Create users table
             String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
                 "id BIGINT AUTO_INCREMENT PRIMARY KEY," +
@@ -648,7 +662,7 @@ public class DatabaseManager {
                 "INDEX idx_email (email)," +
                 "INDEX idx_role (role)" +
                 ")";
-            
+
             stmt.execute(createUsersTable);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create tables", e);
@@ -666,7 +680,7 @@ public User authenticate(String username, String password) {
     try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
         stmt.setString(1, username);
         ResultSet rs = stmt.executeQuery();
-        
+
         if (rs.next()) {
             User user = mapResultSetToEntity(rs);
             if (user.verifyPassword(password)) {
@@ -690,12 +704,12 @@ public List<Task> findByAssignedUser(Long userId) throws SQLException {
                     LEFT JOIN users u2 ON t.assigner_id = u2.id
                     WHERE t.assigned_user_id = ?
                     ORDER BY t.created_at DESC""";
-    
+
     List<Task> tasks = new ArrayList<>();
     try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
         stmt.setLong(1, userId);
         ResultSet rs = stmt.executeQuery();
-        
+
         while (rs.next()) {
             Task task = mapResultSetToEntity(rs);
             // Set additional data from JOIN
@@ -717,34 +731,34 @@ public List<ProjectSummary> getProjectSummaries() throws SQLException {
                     LEFT JOIN users u ON p.created_by = u.id
                     GROUP BY p.id, p.name, p.status, u.username
                     ORDER BY p.created_at DESC""";
-    
+
     // Implementation...
 }
 ```
 
 ### Fungsi Setiap Tabel:
 
-| Tabel | Fungsi | Key Columns | Relationships |
-|-------|--------|-------------|---------------|
-| **users** | Menyimpan data pengguna, authentication, dan role management | id (PK), username (UNIQUE), email (UNIQUE) | Referenced by projects.created_by, tasks.assigned_user_id, tasks.assigner_id |
-| **projects** | Menyimpan informasi proyek dan hubungan dengan creator | id (PK), created_by (FK to users) | Has many tasks, belongs to user (creator) |
-| **tasks** | Menyimpan tugas, assignment, dan hubungan dengan project | id (PK), project_id (FK), assigned_user_id (FK), assigner_id (FK) | Belongs to project, assigned to user, assigned by user |
-| **status_history** | Audit trail untuk perubahan status project/task | entity_type, entity_id, changed_by (FK to users) | Polymorphic relationship to projects/tasks |
+| Tabel              | Fungsi                                                       | Key Columns                                                       | Relationships                                                                |
+| ------------------ | ------------------------------------------------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **users**          | Menyimpan data pengguna, authentication, dan role management | id (PK), username (UNIQUE), email (UNIQUE)                        | Referenced by projects.created_by, tasks.assigned_user_id, tasks.assigner_id |
+| **projects**       | Menyimpan informasi proyek dan hubungan dengan creator       | id (PK), created_by (FK to users)                                 | Has many tasks, belongs to user (creator)                                    |
+| **tasks**          | Menyimpan tugas, assignment, dan hubungan dengan project     | id (PK), project_id (FK), assigned_user_id (FK), assigner_id (FK) | Belongs to project, assigned to user, assigned by user                       |
+| **status_history** | Audit trail untuk perubahan status project/task              | entity_type, entity_id, changed_by (FK to users)                  | Polymorphic relationship to projects/tasks                                   |
 
 ### Database Constraints dan Indexes:
 
 ```sql
 -- Foreign Key Constraints
-ALTER TABLE projects ADD CONSTRAINT fk_projects_creator 
+ALTER TABLE projects ADD CONSTRAINT fk_projects_creator
     FOREIGN KEY (created_by) REFERENCES users(id);
 
-ALTER TABLE tasks ADD CONSTRAINT fk_tasks_project 
+ALTER TABLE tasks ADD CONSTRAINT fk_tasks_project
     FOREIGN KEY (project_id) REFERENCES projects(id);
 
-ALTER TABLE tasks ADD CONSTRAINT fk_tasks_assigned_user 
+ALTER TABLE tasks ADD CONSTRAINT fk_tasks_assigned_user
     FOREIGN KEY (assigned_user_id) REFERENCES users(id);
 
-ALTER TABLE tasks ADD CONSTRAINT fk_tasks_assigner 
+ALTER TABLE tasks ADD CONSTRAINT fk_tasks_assigner
     FOREIGN KEY (assigner_id) REFERENCES users(id);
 
 -- Performance Indexes

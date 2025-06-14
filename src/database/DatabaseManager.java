@@ -1,8 +1,8 @@
 package database;
 
-import java.sql.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.*;
 import java.util.Properties;
 
 /**
@@ -305,7 +305,7 @@ public class DatabaseManager {
             
             PreparedStatement insertStmt = getConnection().prepareStatement(insertQuery);
             insertStmt.setString(1, "admin");
-            insertStmt.setString(2, "$2a$10$8K1p/a0dL2LkUnNWUaooHOxHfuaJP5TmVxcT6pv2kZpQixU6G/aqy"); // "admin123" hashed
+            insertStmt.setString(2, "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"); // "admin123" SHA-256 hashed
             insertStmt.setString(3, "admin@taskmanager.com");
             insertStmt.setString(4, "System Administrator");
             insertStmt.setString(5, "ADMIN");

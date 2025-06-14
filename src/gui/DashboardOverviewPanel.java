@@ -1,12 +1,11 @@
 package gui;
 
 import dao.*;
-import models.*;
-import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.Map;
+import javax.swing.*;
+import models.*;
 
 /**
  * Dashboard overview panel showing statistics and recent activities
@@ -71,23 +70,17 @@ public class DashboardOverviewPanel extends JPanel {
         // Layout components
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(TaskManagerApp.BACKGROUND_COLOR);
+        topPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
         topPanel.add(titleLabel, BorderLayout.WEST);
         
-        JPanel contentPanel = new JPanel(new GridLayout(1, 3, 20, 0));
+        JPanel contentPanel = new JPanel(new GridLayout(1, 3, 15, 0));
         contentPanel.setBackground(TaskManagerApp.BACKGROUND_COLOR);
         contentPanel.add(statsPanel);
         contentPanel.add(activitiesPanel);
         contentPanel.add(quickActionsPanel);
         
         mainContainer.add(topPanel, BorderLayout.NORTH);
-        mainContainer.add(Box.createVerticalStrut(20), BorderLayout.CENTER);
-        
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setBackground(TaskManagerApp.BACKGROUND_COLOR);
-        centerPanel.add(contentPanel, BorderLayout.NORTH);
-        centerPanel.add(Box.createVerticalGlue(), BorderLayout.CENTER);
-        
-        mainContainer.add(centerPanel, BorderLayout.CENTER);
+        mainContainer.add(contentPanel, BorderLayout.CENTER);
         
         add(mainContainer, BorderLayout.CENTER);
     }
@@ -99,7 +92,8 @@ public class DashboardOverviewPanel extends JPanel {
     private JPanel createStatisticsPanel() {
         JPanel panel = TaskManagerApp.createStyledPanel("Statistics");
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setPreferredSize(new Dimension(300, 400));
+        panel.setPreferredSize(new Dimension(280, 450));
+        panel.setMaximumSize(new Dimension(280, 450));
         
         try {
             // Get statistics based on user role
@@ -193,7 +187,7 @@ public class DashboardOverviewPanel extends JPanel {
     private void addStatItem(JPanel panel, String label, String value, Color color) {
         JPanel itemPanel = new JPanel(new BorderLayout());
         itemPanel.setBackground(Color.WHITE);
-        itemPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        itemPanel.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
         
         JLabel labelComponent = new JLabel(label);
         labelComponent.setFont(TaskManagerApp.BODY_FONT);
@@ -222,7 +216,8 @@ public class DashboardOverviewPanel extends JPanel {
     private JPanel createRecentActivitiesPanel() {
         JPanel panel = TaskManagerApp.createStyledPanel("Recent Activities");
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setPreferredSize(new Dimension(300, 400));
+        panel.setPreferredSize(new Dimension(280, 450));
+        panel.setMaximumSize(new Dimension(280, 450));
         
         try {
             // Get recent tasks
@@ -262,7 +257,7 @@ public class DashboardOverviewPanel extends JPanel {
         JPanel itemPanel = new JPanel();
         itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
         itemPanel.setBackground(Color.WHITE);
-        itemPanel.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
+        itemPanel.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
         
         JLabel titleLabel = new JLabel(task.getTitle());
         titleLabel.setFont(TaskManagerApp.BODY_FONT.deriveFont(Font.BOLD));
@@ -300,7 +295,8 @@ public class DashboardOverviewPanel extends JPanel {
     private JPanel createQuickActionsPanel() {
         JPanel panel = TaskManagerApp.createStyledPanel("Quick Actions");
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setPreferredSize(new Dimension(300, 400));
+        panel.setPreferredSize(new Dimension(280, 450));
+        panel.setMaximumSize(new Dimension(280, 450));
         
         // Create action buttons based on user role
         if (currentUser.getRole() == User.Role.ADMIN || currentUser.getRole() == User.Role.MANAGER) {
@@ -343,12 +339,18 @@ public class DashboardOverviewPanel extends JPanel {
     private void addActionButton(JPanel panel, String text, Color color, 
                                 java.awt.event.ActionListener action) {
         JButton button = TaskManagerApp.createStyledButton(text, color, Color.WHITE);
-        button.setAlignmentX(Component.LEFT_ALIGNMENT);
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setPreferredSize(new Dimension(220, 35));
+        button.setMaximumSize(new Dimension(220, 35));
         button.addActionListener(action);
         
-        panel.add(button);
-        panel.add(Box.createVerticalStrut(10));
+        JPanel buttonWrapper = new JPanel();
+        buttonWrapper.setBackground(Color.WHITE);
+        buttonWrapper.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        buttonWrapper.add(button);
+        
+        panel.add(buttonWrapper);
+        panel.add(Box.createVerticalStrut(8));
     }
     
     /**

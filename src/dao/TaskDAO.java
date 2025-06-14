@@ -1,14 +1,14 @@
 package dao;
 
-import models.Task;
-import models.Project;
-import models.User;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import models.Project;
+import models.Task;
+import models.User;
 
 /**
  * TaskDAO class extending BaseDAO
@@ -53,13 +53,13 @@ public class TaskDAO extends BaseDAO<Task> {
         }
         
         User assignedTo = null;
-        if (rs.getInt("assigned_to") != 0) {
-            assignedTo = userDAO.findById(rs.getInt("assigned_to"));
+        if (rs.getInt("assigned_user_id") != 0) {
+            assignedTo = userDAO.findById(rs.getInt("assigned_user_id"));
         }
         
         User assignedBy = null;
-        if (rs.getInt("assigned_by") != 0) {
-            assignedBy = userDAO.findById(rs.getInt("assigned_by"));
+        if (rs.getInt("assigner_id") != 0) {
+            assignedBy = userDAO.findById(rs.getInt("assigner_id"));
         }
         
         Task task = new Task(
@@ -87,7 +87,7 @@ public class TaskDAO extends BaseDAO<Task> {
      */
     @Override
     protected String getInsertSQL() {
-        return "INSERT INTO tasks (title, description, status, priority, project_id, assigned_to, assigned_by, due_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        return "INSERT INTO tasks (title, description, status, priority, project_id, assigned_user_id, assigner_id, due_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     }
     
     /**
@@ -96,7 +96,7 @@ public class TaskDAO extends BaseDAO<Task> {
      */
     @Override
     protected String getUpdateSQL() {
-        return "UPDATE tasks SET title = ?, description = ?, status = ?, priority = ?, project_id = ?, assigned_to = ?, assigned_by = ?, due_date = ? WHERE id = ?";
+        return "UPDATE tasks SET title = ?, description = ?, status = ?, priority = ?, project_id = ?, assigned_user_id = ?, assigner_id = ?, due_date = ? WHERE id = ?";
     }
     
     /**
@@ -189,7 +189,7 @@ public class TaskDAO extends BaseDAO<Task> {
      */
     public List<Task> findByAssignedUser(int userId) {
         List<Task> tasks = new ArrayList<>();
-        String sql = "SELECT * FROM " + getTableName() + " WHERE assigned_to = ? ORDER BY due_date ASC, priority DESC";
+        String sql = "SELECT * FROM " + getTableName() + " WHERE assigned_user_id = ? ORDER BY due_date ASC, priority DESC";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, userId);
@@ -320,7 +320,7 @@ public class TaskDAO extends BaseDAO<Task> {
     public List<Task> getUnassignedTasks() {
         List<Task> tasks = new ArrayList<>();
         String sql = "SELECT * FROM " + getTableName() + 
-                    " WHERE assigned_to IS NULL ORDER BY priority DESC, created_at DESC";
+                    " WHERE assigned_user_id IS NULL ORDER BY priority DESC, created_at DESC";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
@@ -364,7 +364,7 @@ public class TaskDAO extends BaseDAO<Task> {
      */
     public boolean assignTask(int taskId, int assignedToId, int assignedById) {
         String sql = "UPDATE " + getTableName() + 
-                    " SET assigned_to = ?, assigned_by = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+                    " SET assigned_user_id = ?, assigner_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, assignedToId);
@@ -386,7 +386,7 @@ public class TaskDAO extends BaseDAO<Task> {
      */
     public boolean unassignTask(int taskId) {
         String sql = "UPDATE " + getTableName() + 
-                    " SET assigned_to = NULL, assigned_by = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+                    " SET assigned_user_id = NULL, assigner_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, taskId);
@@ -441,7 +441,7 @@ public class TaskDAO extends BaseDAO<Task> {
             "SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_tasks," +
             "SUM(CASE WHEN due_date < CURDATE() AND status NOT IN ('COMPLETED', 'CANCELLED') THEN 1 ELSE 0 END) as overdue_tasks " +
             "FROM tasks " +
-            "WHERE assigned_to = ?";
+            "WHERE assigned_user_id = ?";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, userId);

@@ -116,7 +116,13 @@ public class User extends BaseEntity {
      * @return true if password matches, false otherwise
      */
     public boolean verifyPassword(String password) {
-        return this.password.equals(hashPassword(password));
+        String inputHash = hashPassword(password);
+        System.out.println("Input password: " + password);
+        System.out.println("Input hash: " + inputHash);
+        System.out.println("Stored hash: " + this.password);
+        boolean match = this.password.equals(inputHash);
+        System.out.println("Hash match: " + match);
+        return match;
     }
     
     /**

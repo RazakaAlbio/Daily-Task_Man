@@ -53,7 +53,7 @@ public class UserRegistrationDialog extends JDialog {
      * Sets up the dialog properties
      */
     private void setupDialog() {
-        setSize(450, 600);
+        setSize(650, 850);
         setLocationRelativeTo(getParent());
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -73,27 +73,28 @@ public class UserRegistrationDialog extends JDialog {
         // Create role combo box
         roleComboBox = new JComboBox<>(User.Role.values());
         roleComboBox.setFont(TaskManagerApp.BODY_FONT);
+        roleComboBox.setForeground(TaskManagerApp.TEXT_PRIMARY);
         roleComboBox.setBackground(Color.WHITE);
         roleComboBox.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(TaskManagerApp.BORDER_COLOR),
+            BorderFactory.createLineBorder(new Color(156, 163, 175), 2),
             BorderFactory.createEmptyBorder(8, 12, 8, 12)
         ));
         roleComboBox.setPreferredSize(new Dimension(300, 40));
         
         // Create buttons
         registerButton = TaskManagerApp.createStyledButton(
-            "Register", 
+            "REGISTER USER", 
             TaskManagerApp.SUCCESS_COLOR, 
             Color.WHITE
         );
-        registerButton.setPreferredSize(new Dimension(140, 40));
+        registerButton.setPreferredSize(new Dimension(220, 60));
         
         cancelButton = TaskManagerApp.createStyledButton(
-            "Cancel", 
-            TaskManagerApp.SECONDARY_COLOR, 
+            "CANCEL", 
+            TaskManagerApp.DANGER_COLOR, 
             Color.WHITE
         );
-        cancelButton.setPreferredSize(new Dimension(140, 40));
+        cancelButton.setPreferredSize(new Dimension(220, 60));
         
         // Create status label
         statusLabel = new JLabel(" ");
@@ -148,6 +149,7 @@ public class UserRegistrationDialog extends JDialog {
         mainPanel.add(statusLabel);
         mainPanel.add(Box.createVerticalStrut(20));
         mainPanel.add(buttonPanel);
+        mainPanel.add(Box.createVerticalStrut(30));
         
         add(mainPanel, BorderLayout.CENTER);
     }
@@ -160,16 +162,16 @@ public class UserRegistrationDialog extends JDialog {
      */
     private void addFormField(JPanel parent, String labelText, JComponent component) {
         JLabel label = new JLabel(labelText);
-        label.setFont(TaskManagerApp.BODY_FONT);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
         label.setForeground(TaskManagerApp.TEXT_PRIMARY);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         component.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         parent.add(label);
-        parent.add(Box.createVerticalStrut(5));
+        parent.add(Box.createVerticalStrut(8));
         parent.add(component);
-        parent.add(Box.createVerticalStrut(15));
+        parent.add(Box.createVerticalStrut(18));
     }
     
     /**

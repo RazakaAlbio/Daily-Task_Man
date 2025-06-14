@@ -90,14 +90,14 @@ public class DatabaseConfig {
                 "status ENUM('TODO', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED') DEFAULT 'TODO'," +
                 "priority ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT') DEFAULT 'MEDIUM'," +
                 "project_id INT," +
-                "assigned_to INT," +
-                "assigned_by INT," +
+                "assigned_user_id INT," +
+                "assigner_id INT," +
                 "due_date DATE," +
                 "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
                 "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
                 "FOREIGN KEY (project_id) REFERENCES projects(id)," +
-                "FOREIGN KEY (assigned_to) REFERENCES users(id)," +
-                "FOREIGN KEY (assigned_by) REFERENCES users(id)" +
+                "FOREIGN KEY (assigned_user_id) REFERENCES users(id)," +
+                "FOREIGN KEY (assigner_id) REFERENCES users(id)" +
                 ")";
             
             stmt.executeUpdate(createUsersTable);
