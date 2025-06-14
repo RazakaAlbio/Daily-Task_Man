@@ -189,12 +189,22 @@ public class TaskManagerApp extends JFrame {
      * Logs out the current user
      */
     public void logout() {
+        // Create custom icon to prevent clipping
+        ImageIcon icon = null;
+        try {
+            // Use a simple question mark icon or default system icon
+            icon = (ImageIcon) UIManager.getIcon("OptionPane.questionIcon");
+        } catch (Exception e) {
+            // Fallback to no icon if there's an issue
+        }
+        
         int option = JOptionPane.showConfirmDialog(
             this,
             "Are you sure you want to logout?",
             "Confirm Logout",
             JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE
+            JOptionPane.QUESTION_MESSAGE,
+            icon
         );
         
         if (option == JOptionPane.YES_OPTION) {
@@ -294,20 +304,20 @@ public class TaskManagerApp extends JFrame {
         panel.setBackground(CARD_COLOR);
         panel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(BORDER_COLOR, 1),
-            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+            BorderFactory.createEmptyBorder(20, 20, 20, 20)
         ));
         
         if (title != null && !title.isEmpty()) {
             panel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createTitledBorder(
                     BorderFactory.createLineBorder(BORDER_COLOR, 1),
-                    title,
+                    " " + title + " ",
                     0,
                     0,
-                    HEADING_FONT,
+                    HEADING_FONT.deriveFont(Font.BOLD, 16f),
                     TEXT_PRIMARY
                 ),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
             ));
         }
         

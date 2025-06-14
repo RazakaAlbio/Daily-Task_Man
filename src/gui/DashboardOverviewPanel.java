@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import javax.swing.*;
 import models.*;
 
+import javax.swing.SwingUtilities;
+
 /**
  * Dashboard overview panel showing statistics and recent activities
  * Demonstrates data visualization and summary displays
@@ -48,6 +50,8 @@ public class DashboardOverviewPanel extends JPanel {
      * Loads and displays dashboard data
      */
     private void loadData() {
+        removeAll();
+        
         // Create main container
         JPanel mainContainer = new JPanel(new BorderLayout());
         mainContainer.setBackground(TaskManagerApp.BACKGROUND_COLOR);
@@ -70,7 +74,7 @@ public class DashboardOverviewPanel extends JPanel {
         // Layout components
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(TaskManagerApp.BACKGROUND_COLOR);
-        topPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
+        topPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
         topPanel.add(titleLabel, BorderLayout.WEST);
         
         JPanel contentPanel = new JPanel(new GridLayout(1, 3, 15, 0));
@@ -82,7 +86,16 @@ public class DashboardOverviewPanel extends JPanel {
         mainContainer.add(topPanel, BorderLayout.NORTH);
         mainContainer.add(contentPanel, BorderLayout.CENTER);
         
+        // Add bottom padding to fill empty space
+        JPanel bottomPadding = new JPanel();
+        bottomPadding.setBackground(TaskManagerApp.BACKGROUND_COLOR);
+        bottomPadding.setPreferredSize(new Dimension(0, 50));
+        mainContainer.add(bottomPadding, BorderLayout.SOUTH);
+        
         add(mainContainer, BorderLayout.CENTER);
+        
+        revalidate();
+        repaint();
     }
     
     /**
@@ -92,8 +105,9 @@ public class DashboardOverviewPanel extends JPanel {
     private JPanel createStatisticsPanel() {
         JPanel panel = TaskManagerApp.createStyledPanel("Statistics");
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setPreferredSize(new Dimension(280, 450));
-        panel.setMaximumSize(new Dimension(280, 450));
+        panel.setPreferredSize(new Dimension(320, 500));
+        panel.setMaximumSize(new Dimension(320, 500));
+        panel.setMinimumSize(new Dimension(300, 480));
         
         try {
             // Get statistics based on user role
@@ -105,6 +119,9 @@ public class DashboardOverviewPanel extends JPanel {
         } catch (Exception e) {
             addErrorMessage(panel, "Failed to load statistics: " + e.getMessage());
         }
+        
+        // Add flexible space at bottom to fill empty area
+        panel.add(Box.createVerticalGlue());
         
         return panel;
     }
@@ -187,7 +204,8 @@ public class DashboardOverviewPanel extends JPanel {
     private void addStatItem(JPanel panel, String label, String value, Color color) {
         JPanel itemPanel = new JPanel(new BorderLayout());
         itemPanel.setBackground(Color.WHITE);
-        itemPanel.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        itemPanel.setBorder(BorderFactory.createEmptyBorder(12, 15, 12, 15));
+        itemPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
         
         JLabel labelComponent = new JLabel(label);
         labelComponent.setFont(TaskManagerApp.BODY_FONT);
@@ -203,10 +221,12 @@ public class DashboardOverviewPanel extends JPanel {
         
         panel.add(itemPanel);
         
-        // Add separator
+        // Add separator with some spacing
+        panel.add(Box.createVerticalStrut(2));
         JSeparator separator = new JSeparator();
         separator.setForeground(TaskManagerApp.BORDER_COLOR);
         panel.add(separator);
+        panel.add(Box.createVerticalStrut(2));
     }
     
     /**
@@ -216,8 +236,9 @@ public class DashboardOverviewPanel extends JPanel {
     private JPanel createRecentActivitiesPanel() {
         JPanel panel = TaskManagerApp.createStyledPanel("Recent Activities");
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setPreferredSize(new Dimension(280, 450));
-        panel.setMaximumSize(new Dimension(280, 450));
+        panel.setPreferredSize(new Dimension(320, 500));
+        panel.setMaximumSize(new Dimension(320, 500));
+        panel.setMinimumSize(new Dimension(300, 480));
         
         try {
             // Get recent tasks
@@ -236,6 +257,8 @@ public class DashboardOverviewPanel extends JPanel {
             
             if (recentTasks.isEmpty()) {
                 addInfoMessage(panel, "No recent activities");
+                // Add some padding when empty
+                panel.add(Box.createVerticalStrut(20));
             } else {
                 for (Task task : recentTasks) {
                     addActivityItem(panel, task);
@@ -244,6 +267,9 @@ public class DashboardOverviewPanel extends JPanel {
         } catch (Exception e) {
             addErrorMessage(panel, "Failed to load activities: " + e.getMessage());
         }
+        
+        // Add flexible space at bottom to fill empty area
+        panel.add(Box.createVerticalGlue());
         
         return panel;
     }
@@ -257,7 +283,8 @@ public class DashboardOverviewPanel extends JPanel {
         JPanel itemPanel = new JPanel();
         itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));
         itemPanel.setBackground(Color.WHITE);
-        itemPanel.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        itemPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        itemPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
         
         JLabel titleLabel = new JLabel(task.getTitle());
         titleLabel.setFont(TaskManagerApp.BODY_FONT.deriveFont(Font.BOLD));
@@ -277,15 +304,18 @@ public class DashboardOverviewPanel extends JPanel {
         assigneeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         itemPanel.add(titleLabel);
+        itemPanel.add(Box.createVerticalStrut(3));
         itemPanel.add(statusLabel);
         itemPanel.add(assigneeLabel);
         
         panel.add(itemPanel);
         
-        // Add separator
+        // Add separator with spacing
+        panel.add(Box.createVerticalStrut(3));
         JSeparator separator = new JSeparator();
         separator.setForeground(TaskManagerApp.BORDER_COLOR);
         panel.add(separator);
+        panel.add(Box.createVerticalStrut(3));
     }
     
     /**
@@ -295,36 +325,48 @@ public class DashboardOverviewPanel extends JPanel {
     private JPanel createQuickActionsPanel() {
         JPanel panel = TaskManagerApp.createStyledPanel("Quick Actions");
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setPreferredSize(new Dimension(280, 450));
-        panel.setMaximumSize(new Dimension(280, 450));
+        panel.setPreferredSize(new Dimension(320, 500));
+        panel.setMaximumSize(new Dimension(320, 500));
+        panel.setMinimumSize(new Dimension(300, 480));
+        
+        // Add some top padding
+        panel.add(Box.createVerticalStrut(15));
         
         // Create action buttons based on user role
         if (currentUser.getRole() == User.Role.ADMIN || currentUser.getRole() == User.Role.MANAGER) {
             addActionButton(panel, "Create New Project", TaskManagerApp.PRIMARY_COLOR, e -> {
-                // TODO: Implement create project dialog
-                JOptionPane.showMessageDialog(this, "Create Project feature coming soon!");
+                ProjectDialog dialog = new ProjectDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Create New Project", null, currentUser, userDAO);
+                dialog.setVisible(true);
+                if (dialog.isConfirmed()) {
+                    // Refresh the dashboard
+                    loadData();
+                }
             });
             
             addActionButton(panel, "Create New Task", TaskManagerApp.SUCCESS_COLOR, e -> {
-                // TODO: Implement create task dialog
-                JOptionPane.showMessageDialog(this, "Create Task feature coming soon!");
+                TaskDialog dialog = new TaskDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Create New Task", null, currentUser, projectDAO, userDAO);
+                dialog.setVisible(true);
+                if (dialog.isConfirmed()) {
+                    // Refresh the dashboard
+                    loadData();
+                }
             });
             
             addActionButton(panel, "View All Users", TaskManagerApp.INFO_COLOR, e -> {
-                // TODO: Navigate to users view
-                JOptionPane.showMessageDialog(this, "Navigate to Users view");
+                navigateToUsersView();
             });
         }
         
         addActionButton(panel, "View My Tasks", TaskManagerApp.SECONDARY_COLOR, e -> {
-            // TODO: Navigate to tasks view
-            JOptionPane.showMessageDialog(this, "Navigate to Tasks view");
+            navigateToTasksView();
         });
         
         addActionButton(panel, "View Projects", TaskManagerApp.WARNING_COLOR, e -> {
-            // TODO: Navigate to projects view
-            JOptionPane.showMessageDialog(this, "Navigate to Projects view");
+            navigateToProjectsView();
         });
+        
+        // Add flexible space at bottom to fill empty area
+        panel.add(Box.createVerticalGlue());
         
         return panel;
     }
@@ -339,10 +381,28 @@ public class DashboardOverviewPanel extends JPanel {
     private void addActionButton(JPanel panel, String text, Color color, 
                                 java.awt.event.ActionListener action) {
         JButton button = TaskManagerApp.createStyledButton(text, color, Color.WHITE);
+        button.setFont(TaskManagerApp.BODY_FONT.deriveFont(Font.BOLD, 15f));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setPreferredSize(new Dimension(220, 35));
-        button.setMaximumSize(new Dimension(220, 35));
+        button.setPreferredSize(new Dimension(400, 50));
+        button.setMaximumSize(new Dimension(400, 50));
+        button.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(color.darker(), 2),
+            BorderFactory.createEmptyBorder(12, 20, 12, 20)
+        ));
         button.addActionListener(action);
+        
+        // Add hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                button.setBackground(color.darker());
+            }
+            
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                button.setBackground(color);
+            }
+        });
         
         JPanel buttonWrapper = new JPanel();
         buttonWrapper.setBackground(Color.WHITE);
@@ -394,6 +454,36 @@ public class DashboardOverviewPanel extends JPanel {
                 return TaskManagerApp.SUCCESS_COLOR;
             default:
                 return TaskManagerApp.TEXT_SECONDARY;
+        }
+    }
+    
+    /**
+     * Navigate to tasks view
+     */
+    private void navigateToTasksView() {
+        DashboardPanel dashboardPanel = (DashboardPanel) SwingUtilities.getAncestorOfClass(DashboardPanel.class, this);
+        if (dashboardPanel != null) {
+            dashboardPanel.showTasksView();
+        }
+    }
+    
+    /**
+     * Navigate to projects view
+     */
+    private void navigateToProjectsView() {
+        DashboardPanel dashboardPanel = (DashboardPanel) SwingUtilities.getAncestorOfClass(DashboardPanel.class, this);
+        if (dashboardPanel != null) {
+            dashboardPanel.showProjectsView();
+        }
+    }
+    
+    /**
+     * Navigate to users view
+     */
+    private void navigateToUsersView() {
+        DashboardPanel dashboardPanel = (DashboardPanel) SwingUtilities.getAncestorOfClass(DashboardPanel.class, this);
+        if (dashboardPanel != null) {
+            dashboardPanel.showUsersView();
         }
     }
 }

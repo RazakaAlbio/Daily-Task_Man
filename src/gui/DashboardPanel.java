@@ -84,7 +84,8 @@ public class DashboardPanel extends JPanel {
             TaskManagerApp.DANGER_COLOR, 
             Color.WHITE
         );
-        logoutButton.setPreferredSize(new Dimension(100, 35));
+        logoutButton.setPreferredSize(new Dimension(120, 40));
+        logoutButton.setFont(TaskManagerApp.BODY_FONT.deriveFont(Font.BOLD));
         
         // Refresh button
         refreshButton = TaskManagerApp.createStyledButton(
@@ -92,7 +93,8 @@ public class DashboardPanel extends JPanel {
             TaskManagerApp.SECONDARY_COLOR, 
             Color.WHITE
         );
-        refreshButton.setPreferredSize(new Dimension(100, 35));
+        refreshButton.setPreferredSize(new Dimension(120, 40));
+        refreshButton.setFont(TaskManagerApp.BODY_FONT.deriveFont(Font.BOLD));
         
         // Navigation buttons
         dashboardButton = createNavButton("Dashboard", "dashboard");
@@ -116,12 +118,12 @@ public class DashboardPanel extends JPanel {
      */
     private JButton createNavButton(String text, String view) {
         JButton button = new JButton(text);
-        button.setFont(TaskManagerApp.BODY_FONT);
+        button.setFont(TaskManagerApp.BODY_FONT.deriveFont(Font.BOLD, 16f));
         button.setForeground(TaskManagerApp.TEXT_PRIMARY);
         button.setBackground(Color.WHITE);
         button.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createMatteBorder(0, 0, 1, 0, TaskManagerApp.BORDER_COLOR),
-            BorderFactory.createEmptyBorder(15, 20, 15, 20)
+            BorderFactory.createEmptyBorder(20, 20, 20, 20)
         ));
         button.setHorizontalAlignment(SwingConstants.LEFT);
         button.setFocusPainted(false);
@@ -156,18 +158,19 @@ public class DashboardPanel extends JPanel {
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
         sidebar.setBackground(Color.WHITE);
         sidebar.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, TaskManagerApp.BORDER_COLOR));
-        sidebar.setPreferredSize(new Dimension(200, 0));
+        sidebar.setPreferredSize(new Dimension(250, 0));
         
         // Logo/Title section
-        JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel logoPanel = new JPanel(new BorderLayout());
         logoPanel.setBackground(TaskManagerApp.PRIMARY_COLOR);
-        logoPanel.setPreferredSize(new Dimension(200, 80));
-        logoPanel.setMaximumSize(new Dimension(200, 80));
+        logoPanel.setPreferredSize(new Dimension(250, 100));
+        logoPanel.setMaximumSize(new Dimension(250, 100));
+        logoPanel.setBorder(BorderFactory.createEmptyBorder(25, 0, 25, 0));
         
-        JLabel logoLabel = new JLabel("Task Manager");
-        logoLabel.setFont(TaskManagerApp.HEADER_FONT);
+        JLabel logoLabel = new JLabel("Task Manager", SwingConstants.CENTER);
+        logoLabel.setFont(TaskManagerApp.HEADER_FONT.deriveFont(Font.BOLD, 22f));
         logoLabel.setForeground(Color.WHITE);
-        logoPanel.add(logoLabel);
+        logoPanel.add(logoLabel, BorderLayout.CENTER);
         
         // Navigation section
         JPanel navPanel = new JPanel();
@@ -175,9 +178,9 @@ public class DashboardPanel extends JPanel {
         navPanel.setBackground(Color.WHITE);
         
         // Add navigation buttons
-        dashboardButton.setMaximumSize(new Dimension(200, 50));
-        projectsButton.setMaximumSize(new Dimension(200, 50));
-        tasksButton.setMaximumSize(new Dimension(200, 50));
+        dashboardButton.setMaximumSize(new Dimension(250, 60));
+        projectsButton.setMaximumSize(new Dimension(250, 60));
+        tasksButton.setMaximumSize(new Dimension(250, 60));
         
         navPanel.add(dashboardButton);
         navPanel.add(projectsButton);
@@ -185,34 +188,14 @@ public class DashboardPanel extends JPanel {
         
         // Only show users button for admin/manager
         if (currentUser.getRole() == User.Role.ADMIN || currentUser.getRole() == User.Role.MANAGER) {
-            usersButton.setMaximumSize(new Dimension(200, 50));
+            usersButton.setMaximumSize(new Dimension(250, 60));
             navPanel.add(usersButton);
         }
-        
-        // User info section
-        JPanel userInfoPanel = new JPanel();
-        userInfoPanel.setLayout(new BoxLayout(userInfoPanel, BoxLayout.Y_AXIS));
-        userInfoPanel.setBackground(TaskManagerApp.BACKGROUND_COLOR);
-        userInfoPanel.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
-        
-        JLabel userLabel = new JLabel(currentUser.getUsername());
-        userLabel.setFont(TaskManagerApp.BODY_FONT.deriveFont(Font.BOLD));
-        userLabel.setForeground(TaskManagerApp.TEXT_PRIMARY);
-        userLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
-        JLabel roleLabel = new JLabel(currentUser.getRole().toString());
-        roleLabel.setFont(TaskManagerApp.SMALL_FONT);
-        roleLabel.setForeground(TaskManagerApp.TEXT_SECONDARY);
-        roleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
-        userInfoPanel.add(userLabel);
-        userInfoPanel.add(roleLabel);
         
         // Add components to sidebar
         sidebar.add(logoPanel);
         sidebar.add(navPanel);
         sidebar.add(Box.createVerticalGlue());
-        sidebar.add(userInfoPanel);
         
         return sidebar;
     }
@@ -232,7 +215,7 @@ public class DashboardPanel extends JPanel {
         headerPanel.add(welcomeLabel, BorderLayout.WEST);
         
         // Header buttons panel
-        JPanel headerButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JPanel headerButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 5));
         headerButtonsPanel.setBackground(Color.WHITE);
         headerButtonsPanel.add(refreshButton);
         headerButtonsPanel.add(logoutButton);
@@ -312,7 +295,7 @@ public class DashboardPanel extends JPanel {
     /**
      * Shows the projects view
      */
-    private void showProjectsView() {
+    public void showProjectsView() {
         currentView = "projects";
         updateNavigationButtons();
         
@@ -341,7 +324,7 @@ public class DashboardPanel extends JPanel {
     /**
      * Shows the tasks view
      */
-    private void showTasksView() {
+    public void showTasksView() {
         currentView = "tasks";
         updateNavigationButtons();
         
@@ -370,7 +353,7 @@ public class DashboardPanel extends JPanel {
     /**
      * Shows the users view (admin/manager only)
      */
-    private void showUsersView() {
+    public void showUsersView() {
         if (currentUser.getRole() != User.Role.ADMIN && currentUser.getRole() != User.Role.MANAGER) {
             showErrorMessage("Access denied: Insufficient permissions");
             return;

@@ -18,6 +18,7 @@ public class Project extends BaseEntity implements Trackable {
         PLANNING("Planning", true),
         ACTIVE("Active", true),
         IN_PROGRESS("In Progress", true),
+        ON_HOLD("On Hold", true),
         COMPLETED("Completed", false),
         PAUSED("Paused", true);
         

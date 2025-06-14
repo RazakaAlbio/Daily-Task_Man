@@ -37,6 +37,17 @@ public class ProjectManagementPanel extends JPanel {
     private JComboBox<String> statusFilter;
     private JLabel statusLabel;
     
+    // Pagination components
+    private JButton firstPageButton;
+    private JButton prevPageButton;
+    private JButton nextPageButton;
+    private JButton lastPageButton;
+    private JLabel pageInfoLabel;
+    private int currentPage = 1;
+    private int itemsPerPage = 10;
+    private int totalItems = 0;
+    private List<Project> allProjects = new java.util.ArrayList<>();
+    
     // Table columns
     private final String[] columnNames = {
         "ID", "Name", "Description", "Status", "Creator", "Tasks", "Progress", "Created", "Updated"
@@ -137,7 +148,7 @@ public class ProjectManagementPanel extends JPanel {
         searchField.setPreferredSize(new Dimension(200, 35));
         
         // Create status filter
-        String[] statusOptions = {"All Status", "PLANNING", "IN_PROGRESS", "COMPLETED", "ON_HOLD", "CANCELLED"};
+        String[] statusOptions = {"All Status", "PLANNING", "ACTIVE", "IN_PROGRESS", "ON_HOLD", "COMPLETED", "PAUSED"};
         statusFilter = new JComboBox<>(statusOptions);
         statusFilter.setFont(TaskManagerApp.BODY_FONT);
         statusFilter.setPreferredSize(new Dimension(150, 35));
@@ -146,6 +157,25 @@ public class ProjectManagementPanel extends JPanel {
         statusLabel = new JLabel(" ");
         statusLabel.setFont(TaskManagerApp.SMALL_FONT);
         statusLabel.setForeground(TaskManagerApp.TEXT_SECONDARY);
+        
+        // Create pagination components
+        firstPageButton = TaskManagerApp.createStyledButton("<<", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
+        firstPageButton.setPreferredSize(new Dimension(50, 30));
+        
+        prevPageButton = TaskManagerApp.createStyledButton("<", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
+        prevPageButton.setPreferredSize(new Dimension(50, 30));
+        
+        nextPageButton = TaskManagerApp.createStyledButton(">", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
+        nextPageButton.setPreferredSize(new Dimension(50, 30));
+        
+        lastPageButton = TaskManagerApp.createStyledButton(">>", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
+        lastPageButton.setPreferredSize(new Dimension(50, 30));
+        
+        pageInfoLabel = new JLabel("Page 1 of 1");
+        pageInfoLabel.setFont(TaskManagerApp.BODY_FONT);
+        pageInfoLabel.setForeground(TaskManagerApp.TEXT_PRIMARY);
+        
+        updatePaginationButtons();
     }
     
     /**
@@ -208,11 +238,22 @@ public class ProjectManagementPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(projectTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.setPreferredSize(new Dimension(800, 400));
+        
+        // Pagination panel
+        JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        paginationPanel.setBackground(Color.WHITE);
+        paginationPanel.add(firstPageButton);
+        paginationPanel.add(prevPageButton);
+        paginationPanel.add(pageInfoLabel);
+        paginationPanel.add(nextPageButton);
+        paginationPanel.add(lastPageButton);
         
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBackground(Color.WHITE);
-        tablePanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
+        tablePanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 10, 20));
         tablePanel.add(scrollPane, BorderLayout.CENTER);
+        tablePanel.add(paginationPanel, BorderLayout.SOUTH);
         
         // Main layout
         add(titlePanel, BorderLayout.NORTH);
@@ -260,8 +301,41 @@ public class ProjectManagementPanel extends JPanel {
         viewTasksButton.addActionListener(e -> viewProjectTasks());
         
         // Search and filter listeners
-        searchField.addActionListener(e -> filterProjects());
-        statusFilter.addActionListener(e -> filterProjects());
+        searchField.addActionListener(e -> {
+            currentPage = 1;
+            filterProjects();
+        });
+        statusFilter.addActionListener(e -> {
+            currentPage = 1;
+            filterProjects();
+        });
+        
+        // Pagination listeners
+        firstPageButton.addActionListener(e -> {
+            currentPage = 1;
+            updateTableWithPagination();
+        });
+        
+        prevPageButton.addActionListener(e -> {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTableWithPagination();
+            }
+        });
+        
+        nextPageButton.addActionListener(e -> {
+            int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTableWithPagination();
+            }
+        });
+        
+        lastPageButton.addActionListener(e -> {
+            int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+            currentPage = Math.max(1, totalPages);
+            updateTableWithPagination();
+        });
     }
     
     /**
@@ -294,11 +368,25 @@ public class ProjectManagementPanel extends JPanel {
      * @param projects List of projects
      */
     private void updateTable(List<Project> projects) {
+        this.allProjects = new java.util.ArrayList<>(projects);
+        this.totalItems = projects.size();
+        this.currentPage = 1;
+        updateTableWithPagination();
+    }
+    
+    /**
+     * Updates the table with pagination
+     */
+    private void updateTableWithPagination() {
         tableModel.setRowCount(0);
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         
-        for (Project project : projects) {
+        int startIndex = (currentPage - 1) * itemsPerPage;
+        int endIndex = Math.min(startIndex + itemsPerPage, allProjects.size());
+        
+        for (int i = startIndex; i < endIndex; i++) {
+            Project project = allProjects.get(i);
             // Get task count for project
             int taskCount = 0;
             String progress = "0%";
@@ -331,6 +419,29 @@ public class ProjectManagementPanel extends JPanel {
             
             tableModel.addRow(rowData);
         }
+        
+        updatePaginationInfo();
+        updatePaginationButtons();
+    }
+    
+    /**
+     * Updates pagination information
+     */
+    private void updatePaginationInfo() {
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / itemsPerPage));
+        pageInfoLabel.setText(String.format("Page %d of %d (%d items)", currentPage, totalPages, totalItems));
+    }
+    
+    /**
+     * Updates pagination button states
+     */
+    private void updatePaginationButtons() {
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / itemsPerPage));
+        
+        firstPageButton.setEnabled(currentPage > 1);
+        prevPageButton.setEnabled(currentPage > 1);
+        nextPageButton.setEnabled(currentPage < totalPages);
+        lastPageButton.setEnabled(currentPage < totalPages);
     }
     
     /**

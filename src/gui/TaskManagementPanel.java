@@ -39,6 +39,17 @@ public class TaskManagementPanel extends JPanel {
     private JComboBox<String> assigneeFilter;
     private JLabel statusLabel;
     
+    // Pagination components
+    private JButton firstPageButton;
+    private JButton prevPageButton;
+    private JButton nextPageButton;
+    private JButton lastPageButton;
+    private JLabel pageInfoLabel;
+    private int currentPage = 1;
+    private int itemsPerPage = 10;
+    private int totalItems = 0;
+    private List<Task> allTasks = new java.util.ArrayList<>();
+    
     // Table columns
     private final String[] columnNames = {
         "ID", "Title", "Description", "Status", "Priority", "Project", 
@@ -162,6 +173,25 @@ public class TaskManagementPanel extends JPanel {
         statusLabel = new JLabel(" ");
         statusLabel.setFont(TaskManagerApp.SMALL_FONT);
         statusLabel.setForeground(TaskManagerApp.TEXT_SECONDARY);
+        
+        // Create pagination components
+        firstPageButton = TaskManagerApp.createStyledButton("<<", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
+        firstPageButton.setPreferredSize(new Dimension(50, 30));
+        
+        prevPageButton = TaskManagerApp.createStyledButton("<", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
+        prevPageButton.setPreferredSize(new Dimension(50, 30));
+        
+        nextPageButton = TaskManagerApp.createStyledButton(">", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
+        nextPageButton.setPreferredSize(new Dimension(50, 30));
+        
+        lastPageButton = TaskManagerApp.createStyledButton(">>", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
+        lastPageButton.setPreferredSize(new Dimension(50, 30));
+        
+        pageInfoLabel = new JLabel("Page 1 of 1");
+        pageInfoLabel.setFont(TaskManagerApp.BODY_FONT);
+        pageInfoLabel.setForeground(TaskManagerApp.TEXT_PRIMARY);
+        
+        updatePaginationButtons();
     }
     
     /**
@@ -259,11 +289,22 @@ public class TaskManagementPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(taskTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.setPreferredSize(new Dimension(800, 400));
+        
+        // Pagination panel
+        JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        paginationPanel.setBackground(Color.WHITE);
+        paginationPanel.add(firstPageButton);
+        paginationPanel.add(prevPageButton);
+        paginationPanel.add(pageInfoLabel);
+        paginationPanel.add(nextPageButton);
+        paginationPanel.add(lastPageButton);
         
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBackground(Color.WHITE);
-        tablePanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
+        tablePanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 10, 20));
         tablePanel.add(scrollPane, BorderLayout.CENTER);
+        tablePanel.add(paginationPanel, BorderLayout.SOUTH);
         
         // Main layout
         add(titlePanel, BorderLayout.NORTH);
@@ -319,11 +360,50 @@ public class TaskManagementPanel extends JPanel {
             assignButton.addActionListener(e -> assignTask());
         }
         
-        // Search and filter listeners
-        searchField.addActionListener(e -> filterTasks());
-        statusFilter.addActionListener(e -> filterTasks());
-        priorityFilter.addActionListener(e -> filterTasks());
-        assigneeFilter.addActionListener(e -> filterTasks());
+        // Filter listeners
+        searchField.addActionListener(e -> {
+            currentPage = 1;
+            filterTasks();
+        });
+        statusFilter.addActionListener(e -> {
+            currentPage = 1;
+            filterTasks();
+        });
+        priorityFilter.addActionListener(e -> {
+            currentPage = 1;
+            filterTasks();
+        });
+        assigneeFilter.addActionListener(e -> {
+            currentPage = 1;
+            filterTasks();
+        });
+        
+        // Pagination listeners
+        firstPageButton.addActionListener(e -> {
+            currentPage = 1;
+            updateTableWithPagination();
+        });
+        
+        prevPageButton.addActionListener(e -> {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTableWithPagination();
+            }
+        });
+        
+        nextPageButton.addActionListener(e -> {
+            int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTableWithPagination();
+            }
+        });
+        
+        lastPageButton.addActionListener(e -> {
+            int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+            currentPage = Math.max(1, totalPages);
+            updateTableWithPagination();
+        });
     }
     
     /**
@@ -362,12 +442,26 @@ public class TaskManagementPanel extends JPanel {
      * @param tasks List of tasks
      */
     private void updateTable(List<Task> tasks) {
+        this.allTasks = new java.util.ArrayList<>(tasks);
+        this.totalItems = tasks.size();
+        this.currentPage = 1;
+        updateTableWithPagination();
+    }
+    
+    /**
+     * Updates the table with pagination
+     */
+    private void updateTableWithPagination() {
         tableModel.setRowCount(0);
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         
-        for (Task task : tasks) {
+        int startIndex = (currentPage - 1) * itemsPerPage;
+        int endIndex = Math.min(startIndex + itemsPerPage, allTasks.size());
+        
+        for (int i = startIndex; i < endIndex; i++) {
+            Task task = allTasks.get(i);
             Object[] rowData = {
                 task.getId(),
                 task.getTitle(),
@@ -384,6 +478,29 @@ public class TaskManagementPanel extends JPanel {
             
             tableModel.addRow(rowData);
         }
+        
+        updatePaginationInfo();
+        updatePaginationButtons();
+    }
+    
+    /**
+     * Updates pagination information
+     */
+    private void updatePaginationInfo() {
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / itemsPerPage));
+        pageInfoLabel.setText(String.format("Page %d of %d (%d items)", currentPage, totalPages, totalItems));
+    }
+    
+    /**
+     * Updates pagination button states
+     */
+    private void updatePaginationButtons() {
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / itemsPerPage));
+        
+        firstPageButton.setEnabled(currentPage > 1);
+        prevPageButton.setEnabled(currentPage > 1);
+        nextPageButton.setEnabled(currentPage < totalPages);
+        lastPageButton.setEnabled(currentPage < totalPages);
     }
     
     /**

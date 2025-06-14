@@ -32,6 +32,19 @@ public class UserManagementPanel extends JPanel {
     private JComboBox<String> roleFilter;
     private JLabel statusLabel;
     
+    // Pagination components
+    private JButton firstPageButton;
+    private JButton prevPageButton;
+    private JButton nextPageButton;
+    private JButton lastPageButton;
+    private JLabel pageInfoLabel;
+    
+    // Pagination state
+    private int currentPage = 1;
+    private int itemsPerPage = 10;
+    private int totalItems = 0;
+    private List<User> allUsers;
+    
     // Table columns
     private final String[] columnNames = {
         "ID", "Username", "Full Name", "Email", "Role", "Created", "Updated"
@@ -164,6 +177,23 @@ public class UserManagementPanel extends JPanel {
         statusLabel = new JLabel(" ");
         statusLabel.setFont(TaskManagerApp.SMALL_FONT);
         statusLabel.setForeground(TaskManagerApp.TEXT_SECONDARY);
+        
+        // Create pagination buttons
+        firstPageButton = TaskManagerApp.createStyledButton("<<", TaskManagerApp.PRIMARY_COLOR, Color.WHITE);
+        prevPageButton = TaskManagerApp.createStyledButton("<", TaskManagerApp.PRIMARY_COLOR, Color.WHITE);
+        nextPageButton = TaskManagerApp.createStyledButton(">", TaskManagerApp.PRIMARY_COLOR, Color.WHITE);
+        lastPageButton = TaskManagerApp.createStyledButton(">>", TaskManagerApp.PRIMARY_COLOR, Color.WHITE);
+        
+        firstPageButton.setPreferredSize(new Dimension(50, 30));
+        prevPageButton.setPreferredSize(new Dimension(50, 30));
+        nextPageButton.setPreferredSize(new Dimension(50, 30));
+        lastPageButton.setPreferredSize(new Dimension(50, 30));
+        
+        pageInfoLabel = new JLabel("Page 1 of 1");
+        pageInfoLabel.setFont(TaskManagerApp.SMALL_FONT);
+        pageInfoLabel.setForeground(TaskManagerApp.TEXT_SECONDARY);
+        pageInfoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        pageInfoLabel.setPreferredSize(new Dimension(100, 30));
     }
     
     /**
@@ -218,11 +248,22 @@ public class UserManagementPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(userTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.setPreferredSize(new Dimension(800, 400));
+        
+        // Pagination panel
+        JPanel paginationPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        paginationPanel.setBackground(Color.WHITE);
+        paginationPanel.add(firstPageButton);
+        paginationPanel.add(prevPageButton);
+        paginationPanel.add(pageInfoLabel);
+        paginationPanel.add(nextPageButton);
+        paginationPanel.add(lastPageButton);
         
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBackground(Color.WHITE);
         tablePanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
         tablePanel.add(scrollPane, BorderLayout.CENTER);
+        tablePanel.add(paginationPanel, BorderLayout.SOUTH);
         
         // Main layout
         add(titlePanel, BorderLayout.NORTH);
@@ -274,8 +315,41 @@ public class UserManagementPanel extends JPanel {
         resetPasswordButton.addActionListener(e -> resetPassword());
         
         // Search and filter listeners
-        searchField.addActionListener(e -> filterUsers());
-        roleFilter.addActionListener(e -> filterUsers());
+        searchField.addActionListener(e -> {
+            currentPage = 1;
+            filterUsers();
+        });
+        roleFilter.addActionListener(e -> {
+            currentPage = 1;
+            filterUsers();
+        });
+        
+        // Pagination listeners
+        firstPageButton.addActionListener(e -> {
+            currentPage = 1;
+            updateTableWithPagination();
+        });
+        
+        prevPageButton.addActionListener(e -> {
+            if (currentPage > 1) {
+                currentPage--;
+                updateTableWithPagination();
+            }
+        });
+        
+        nextPageButton.addActionListener(e -> {
+            int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateTableWithPagination();
+            }
+        });
+        
+        lastPageButton.addActionListener(e -> {
+            int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+            currentPage = Math.max(1, totalPages);
+            updateTableWithPagination();
+        });
     }
     
     /**
@@ -308,11 +382,31 @@ public class UserManagementPanel extends JPanel {
      * @param users List of users
      */
     private void updateTable(List<User> users) {
+        this.allUsers = users;
+        this.totalItems = users.size();
+        this.currentPage = 1;
+        updateTableWithPagination();
+    }
+    
+    /**
+     * Updates the table with paginated user data
+     */
+    private void updateTableWithPagination() {
         tableModel.setRowCount(0);
+        
+        if (allUsers == null || allUsers.isEmpty()) {
+            updatePaginationInfo();
+            updatePaginationButtons();
+            return;
+        }
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         
-        for (User user : users) {
+        int startIndex = (currentPage - 1) * itemsPerPage;
+        int endIndex = Math.min(startIndex + itemsPerPage, allUsers.size());
+        
+        for (int i = startIndex; i < endIndex; i++) {
+            User user = allUsers.get(i);
             Object[] rowData = {
                 user.getId(),
                 user.getUsername(),
@@ -325,6 +419,29 @@ public class UserManagementPanel extends JPanel {
             
             tableModel.addRow(rowData);
         }
+        
+        updatePaginationInfo();
+        updatePaginationButtons();
+    }
+    
+    /**
+     * Updates the pagination information label
+     */
+    private void updatePaginationInfo() {
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / itemsPerPage));
+        pageInfoLabel.setText(String.format("Page %d of %d (%d items)", currentPage, totalPages, totalItems));
+    }
+    
+    /**
+     * Updates the state of pagination buttons
+     */
+    private void updatePaginationButtons() {
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / itemsPerPage));
+        
+        firstPageButton.setEnabled(currentPage > 1);
+        prevPageButton.setEnabled(currentPage > 1);
+        nextPageButton.setEnabled(currentPage < totalPages);
+        lastPageButton.setEnabled(currentPage < totalPages);
     }
     
     /**

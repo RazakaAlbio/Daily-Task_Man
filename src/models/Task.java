@@ -19,6 +19,7 @@ public class Task extends BaseEntity implements Assignable, Trackable {
     public enum Status {
         TODO("To Do", false),
         IN_PROGRESS("In Progress", false),
+        REVIEW("Review", false),
         DONE("Done", true),
         COMPLETED("Completed", true),
         CANCELLED("Cancelled", true);
