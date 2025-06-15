@@ -66,7 +66,7 @@ public class ProjectDAO extends BaseDAO<Project> {
      */
     @Override
     protected String getInsertSQL() {
-        return "INSERT INTO projects (name, description, status, created_by) VALUES (?, ?, ?, ?)";
+        return "INSERT INTO projects (name, description, status, creator_id) VALUES (?, ?, ?, ?)";
     }
     
     /**
@@ -90,7 +90,7 @@ public class ProjectDAO extends BaseDAO<Project> {
         stmt.setString(1, project.getName());
         stmt.setString(2, project.getDescription());
         stmt.setString(3, project.getStatus().name());
-        stmt.setInt(4, project.getCreatedBy().getId());
+        stmt.setInt(4, project.getCreator().getId());
     }
     
     /**

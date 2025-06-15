@@ -293,9 +293,18 @@ public class ProjectManagementPanel extends JPanel {
         
         // Button listeners
         if (canEditProjects()) {
-            createButton.addActionListener(e -> createProject());
-            editButton.addActionListener(e -> editProject());
-            deleteButton.addActionListener(e -> deleteProject());
+            createButton.addActionListener(e -> {
+                System.out.println("\n*** Create Project button clicked! ***");
+                createProject();
+            });
+            editButton.addActionListener(e -> {
+                System.out.println("\n*** Edit Project button clicked! ***");
+                editProject();
+            });
+            deleteButton.addActionListener(e -> {
+                System.out.println("\n*** Delete Project button clicked! ***");
+                deleteProject();
+            });
         }
         
         viewTasksButton.addActionListener(e -> viewProjectTasks());
@@ -494,12 +503,19 @@ public class ProjectManagementPanel extends JPanel {
      * Creates a new project
      */
     private void createProject() {
+        System.out.println("\n=== createProject() method called ===");
+        System.out.println("Current user: " + (currentUser != null ? currentUser.getUsername() : "null"));
+        
         ProjectDialog dialog = new ProjectDialog(SwingUtilities.getWindowAncestor(this), 
-                                               "Create Project", null, currentUser, userDAO);
+                                                "Create Project", null, currentUser, userDAO);
+        System.out.println("ProjectDialog created, making it visible...");
         dialog.setVisible(true);
+        System.out.println("Dialog closed, checking if confirmed...");
         
         if (dialog.isConfirmed()) {
+            System.out.println("Dialog confirmed, starting save worker...");
             Project newProject = dialog.getProject();
+            System.out.println("New project: " + (newProject != null ? newProject.getName() : "null"));
             
             SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
                 @Override
@@ -534,12 +550,12 @@ public class ProjectManagementPanel extends JPanel {
         int selectedRow = projectTable.getSelectedRow();
         if (selectedRow == -1) return;
         
-        Long projectId = (Long) tableModel.getValueAt(selectedRow, 0);
+        Integer projectId = (Integer) tableModel.getValueAt(selectedRow, 0);
         
         SwingWorker<Project, Void> worker = new SwingWorker<Project, Void>() {
             @Override
             protected Project doInBackground() throws Exception {
-                return projectDAO.findById(projectId.intValue());
+                return projectDAO.findById(projectId);
             }
             
             @Override
@@ -614,12 +630,12 @@ public class ProjectManagementPanel extends JPanel {
         );
         
         if (result == JOptionPane.YES_OPTION) {
-            Long projectId = (Long) tableModel.getValueAt(selectedRow, 0);
+            Integer projectId = (Integer) tableModel.getValueAt(selectedRow, 0);
             
             SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
                 @Override
                 protected Boolean doInBackground() throws Exception {
-                    return projectDAO.deleteById(projectId.intValue());
+                    return projectDAO.deleteById(projectId);
                 }
                 
                 @Override
@@ -649,16 +665,101 @@ public class ProjectManagementPanel extends JPanel {
         int selectedRow = projectTable.getSelectedRow();
         if (selectedRow == -1) return;
         
-        Long projectId = (Long) tableModel.getValueAt(selectedRow, 0);
+        Integer projectId = (Integer) tableModel.getValueAt(selectedRow, 0);
         String projectName = (String) tableModel.getValueAt(selectedRow, 1);
         
-        // TODO: Open project tasks dialog or navigate to tasks view with filter
-        JOptionPane.showMessageDialog(
-            this,
-            "View tasks for project: " + projectName + "\nProject ID: " + projectId,
-            "Project Tasks",
-            JOptionPane.INFORMATION_MESSAGE
-        );
+        SwingWorker<List<Task>, Void> worker = new SwingWorker<List<Task>, Void>() {
+            @Override
+            protected List<Task> doInBackground() throws Exception {
+                TaskDAO taskDAO = new TaskDAO();
+                return taskDAO.findByProject(projectId);
+            }
+            
+            @Override
+            protected void done() {
+                try {
+                    List<Task> tasks = get();
+                    showProjectTasksDialog(projectName, tasks);
+                } catch (Exception e) {
+                    showErrorMessage("Failed to load project tasks: " + e.getMessage());
+                }
+            }
+        };
+        
+        worker.execute();
+    }
+    
+    /**
+     * Shows project tasks in a dialog
+     * @param projectName Name of the project
+     * @param tasks List of tasks for the project
+     */
+    private void showProjectTasksDialog(String projectName, List<Task> tasks) {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Tasks for Project: " + projectName, true);
+        dialog.setSize(800, 600);
+        dialog.setLocationRelativeTo(this);
+        
+        // Create table model
+        String[] columnNames = {"ID", "Title", "Status", "Priority", "Assigned To", "Due Date"};
+        DefaultTableModel taskTableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
+        // Populate table
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        for (Task task : tasks) {
+            Object[] rowData = {
+                task.getId(),
+                task.getTitle(),
+                task.getStatus(),
+                task.getPriority(),
+                task.getAssignedUser() != null ? task.getAssignedUser().getFullName() : "Unassigned",
+                task.getDueDate() != null ? task.getDueDate().format(formatter) : "No due date"
+            };
+            taskTableModel.addRow(rowData);
+        }
+        
+        JTable taskTable = new JTable(taskTableModel);
+        taskTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        taskTable.getTableHeader().setReorderingAllowed(false);
+        
+        // Set column widths
+        taskTable.getColumnModel().getColumn(0).setPreferredWidth(50);
+        taskTable.getColumnModel().getColumn(1).setPreferredWidth(200);
+        taskTable.getColumnModel().getColumn(2).setPreferredWidth(100);
+        taskTable.getColumnModel().getColumn(3).setPreferredWidth(80);
+        taskTable.getColumnModel().getColumn(4).setPreferredWidth(150);
+        taskTable.getColumnModel().getColumn(5).setPreferredWidth(100);
+        
+        JScrollPane scrollPane = new JScrollPane(taskTable);
+        
+        // Create info panel
+        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        infoPanel.add(new JLabel("Total tasks: " + tasks.size()));
+        
+        long completedTasks = tasks.stream().filter(t -> t.getStatus() == Task.Status.COMPLETED).count();
+        infoPanel.add(new JLabel("Completed: " + completedTasks));
+        
+        long inProgressTasks = tasks.stream().filter(t -> t.getStatus() == Task.Status.IN_PROGRESS).count();
+        infoPanel.add(new JLabel("In Progress: " + inProgressTasks));
+        
+        // Create close button
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> dialog.dispose());
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.add(closeButton);
+        
+        // Layout
+        dialog.setLayout(new BorderLayout());
+        dialog.add(infoPanel, BorderLayout.NORTH);
+        dialog.add(scrollPane, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+        
+        dialog.setVisible(true);
     }
     
     /**

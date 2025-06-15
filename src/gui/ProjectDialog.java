@@ -1,6 +1,7 @@
 package gui;
 
 import dao.UserDAO;
+import dao.ProjectDAO;
 import models.Project;
 import models.User;
 import javax.swing.*;
@@ -20,6 +21,7 @@ public class ProjectDialog extends JDialog {
     private Project project;
     private User currentUser;
     private UserDAO userDAO;
+    private ProjectDAO projectDAO;
     private boolean confirmed = false;
     
     // GUI Components
@@ -46,6 +48,7 @@ public class ProjectDialog extends JDialog {
         this.project = project;
         this.currentUser = currentUser;
         this.userDAO = userDAO;
+        this.projectDAO = new ProjectDAO();
         
         setupDialog();
         createComponents();
@@ -221,17 +224,24 @@ public class ProjectDialog extends JDialog {
         try {
             List<User> users = userDAO.findAll();
             
-            // Filter to show only admin and manager users
-            List<User> eligibleUsers = users.stream()
-                .filter(user -> user.getRole() == User.Role.ADMIN || user.getRole() == User.Role.MANAGER)
-                .collect(Collectors.toList());
-            
-            for (User user : eligibleUsers) {
-                creatorComboBox.addItem(user);
+            if (currentUser.getRole() == User.Role.ADMIN) {
+                // Admin can see all admin and manager users
+                List<User> eligibleUsers = users.stream()
+                    .filter(user -> user.getRole() == User.Role.ADMIN || user.getRole() == User.Role.MANAGER)
+                    .collect(Collectors.toList());
+                
+                for (User user : eligibleUsers) {
+                    creatorComboBox.addItem(user);
+                }
+                
+                // Set current user as default
+                creatorComboBox.setSelectedItem(currentUser);
+            } else {
+                // Non-admin users can only create projects for themselves
+                creatorComboBox.addItem(currentUser);
+                creatorComboBox.setSelectedItem(currentUser);
+                creatorComboBox.setEnabled(false); // Disable selection for non-admin
             }
-            
-            // Set current user as default
-            creatorComboBox.setSelectedItem(currentUser);
             
         } catch (Exception e) {
             showStatus("Failed to load users: " + e.getMessage(), TaskManagerApp.DANGER_COLOR);
@@ -264,6 +274,7 @@ public class ProjectDialog extends JDialog {
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                System.out.println("\n*** Save button clicked! ***");
                 saveProject();
             }
         });
@@ -289,61 +300,103 @@ public class ProjectDialog extends JDialog {
      * Saves the project
      */
     private void saveProject() {
+        System.out.println("\n=== saveProject() method called ===");
+        
         // Validate form data
         String validationError = validateFormData();
         if (validationError != null) {
+            System.out.println("Validation error: " + validationError);
             showStatus(validationError, TaskManagerApp.DANGER_COLOR);
             return;
         }
+        
+        System.out.println("Validation passed, proceeding with save...");
         
         // Disable save button during save
         saveButton.setEnabled(false);
         saveButton.setText("Saving...");
         
         // Create or update project
-        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+        SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
             @Override
-            protected Void doInBackground() throws Exception {
-                String name = nameField.getText().trim();
-                String description = descriptionArea.getText().trim();
-                Project.Status status = (Project.Status) statusComboBox.getSelectedItem();
-                User creator = (User) creatorComboBox.getSelectedItem();
-                
-                if (project == null) {
-                    // Create new project
-                    project = new Project(name, description, creator);
-                    project.setStatus(status);
-                } else {
-                    // Update existing project
-                    project.setName(name);
-                    project.setDescription(description);
-                    project.setStatus(status);
+            protected Boolean doInBackground() throws Exception {
+                try {
+                    String name = nameField.getText().trim();
+                    String description = descriptionArea.getText().trim();
+                    Project.Status status = (Project.Status) statusComboBox.getSelectedItem();
+                    User creator = (User) creatorComboBox.getSelectedItem();
                     
-                    // Only update creator if user is admin
-                    if (currentUser.getRole() == User.Role.ADMIN && creator != null) {
-                        project.setCreator(creator);
+                    System.out.println("ProjectDialog Debug - Creating/Updating project:");
+                    System.out.println("Name: " + name);
+                    System.out.println("Description: " + description);
+                    System.out.println("Status: " + status);
+                    System.out.println("Creator: " + (creator != null ? creator.getUsername() : "null"));
+                    System.out.println("Current User: " + currentUser.getUsername());
+                    
+                    if (project == null) {
+                        // Create new project
+                        project = new Project(name, description, creator != null ? creator : currentUser);
+                        project.setStatus(status);
+                        System.out.println("Creating new project with creator: " + project.getCreator().getUsername());
+                    } else {
+                        // Update existing project
+                        project.setName(name);
+                        project.setDescription(description);
+                        project.setStatus(status);
+                        
+                        // Only update creator if user is admin
+                        if (currentUser.getRole() == User.Role.ADMIN && creator != null) {
+                            project.setCreator(creator);
+                        }
+                        
+                        project.setUpdatedAt(LocalDateTime.now());
+                        System.out.println("Updating existing project");
                     }
                     
-                    project.setUpdatedAt(LocalDateTime.now());
+                    // Validate project before saving
+                    if (!project.isValid()) {
+                        System.err.println("Project validation failed!");
+                        return false;
+                    }
+                    
+                    // Save to database
+                    System.out.println("Attempting to save project to database...");
+                    boolean result = projectDAO.save(project);
+                    System.out.println("Save result: " + result);
+                    return result;
+                } catch (Exception e) {
+                    System.err.println("Exception in doInBackground: " + e.getMessage());
+                    e.printStackTrace();
+                    throw e;
                 }
-                
-                return null;
             }
             
             @Override
             protected void done() {
                 try {
-                    get(); // Check for exceptions
-                    confirmed = true;
-                    showStatus("Project saved successfully!", TaskManagerApp.SUCCESS_COLOR);
-                    
-                    // Close dialog after 1 second
-                    Timer timer = new Timer(1000, e -> dispose());
-                    timer.setRepeats(false);
-                    timer.start();
+                    Boolean success = get(); // Check for exceptions
+                    if (success) {
+                        confirmed = true;
+                        showStatus("Project saved successfully!", TaskManagerApp.SUCCESS_COLOR);
+                        
+                        // Close dialog after 1 second
+                        Timer timer = new Timer(1000, e -> dispose());
+                        timer.setRepeats(false);
+                        timer.start();
+                    } else {
+                        showStatus("Failed to save project to database", TaskManagerApp.DANGER_COLOR);
+                    }
                     
                 } catch (Exception e) {
-                    showStatus("Failed to save project: " + e.getMessage(), TaskManagerApp.DANGER_COLOR);
+                    String errorMsg = "Failed to save project: " + e.getMessage();
+                    showStatus(errorMsg, TaskManagerApp.DANGER_COLOR);
+                    System.err.println("ProjectDialog Error: " + errorMsg);
+                    e.printStackTrace(); // For debugging
+                    
+                    // Show detailed error dialog for debugging
+                    JOptionPane.showMessageDialog(ProjectDialog.this, 
+                        "Error Details:\n" + e.getClass().getSimpleName() + ": " + e.getMessage(),
+                        "Save Error", JOptionPane.ERROR_MESSAGE);
                 } finally {
                     saveButton.setEnabled(true);
                     saveButton.setText(project == null ? "Create" : "Update");
@@ -362,44 +415,60 @@ public class ProjectDialog extends JDialog {
         String name = nameField.getText().trim();
         String description = descriptionArea.getText().trim();
         
+        System.out.println("ProjectDialog Validation Debug:");
+        System.out.println("Name: '" + name + "' (length: " + name.length() + ")");
+        System.out.println("Description: '" + description + "' (length: " + description.length() + ")");
+        System.out.println("Creator selected: " + (creatorComboBox.getSelectedItem() != null));
+        if (creatorComboBox.getSelectedItem() != null) {
+            System.out.println("Creator: " + ((User)creatorComboBox.getSelectedItem()).getUsername());
+        }
+        
         // Check required fields
         if (name.isEmpty()) {
             nameField.requestFocus();
+            System.out.println("Validation failed: Project name is required");
             return "Project name is required";
         }
         
         if (description.isEmpty()) {
             descriptionArea.requestFocus();
+            System.out.println("Validation failed: Project description is required");
             return "Project description is required";
         }
         
         // Validate name length
         if (name.length() < 3) {
             nameField.requestFocus();
+            System.out.println("Validation failed: Project name must be at least 3 characters");
             return "Project name must be at least 3 characters";
         }
         
         if (name.length() > 100) {
             nameField.requestFocus();
+            System.out.println("Validation failed: Project name must not exceed 100 characters");
             return "Project name must not exceed 100 characters";
         }
         
         // Validate description length
         if (description.length() < 10) {
             descriptionArea.requestFocus();
+            System.out.println("Validation failed: Project description must be at least 10 characters");
             return "Project description must be at least 10 characters";
         }
         
         if (description.length() > 1000) {
             descriptionArea.requestFocus();
+            System.out.println("Validation failed: Project description must not exceed 1000 characters");
             return "Project description must not exceed 1000 characters";
         }
         
-        // Validate creator selection for admin users
-        if (currentUser.getRole() == User.Role.ADMIN && creatorComboBox.getSelectedItem() == null) {
+        // Validate creator selection
+        if (creatorComboBox.getSelectedItem() == null) {
+            System.out.println("Validation failed: Please select a project creator");
             return "Please select a project creator";
         }
         
+        System.out.println("All validations passed!");
         return null; // All validations passed
     }
     

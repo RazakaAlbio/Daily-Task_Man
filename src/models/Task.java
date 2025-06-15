@@ -292,6 +292,32 @@ public class Task extends BaseEntity implements Assignable, Trackable {
     }
     
     /**
+     * Gets the user who made the assignment (alias for getAssignedBy)
+     * @return User object who assigned this task
+     */
+    public User getAssigner() {
+        return assignedBy;
+    }
+    
+    /**
+     * Sets the assigned user
+     * @param user User to assign to
+     */
+    public void setAssignedUser(User user) {
+        this.assignedTo = user;
+        updateTimestamp();
+    }
+    
+    /**
+     * Sets the assigner
+     * @param user User who is making the assignment
+     */
+    public void setAssigner(User user) {
+        this.assignedBy = user;
+        updateTimestamp();
+    }
+    
+    /**
      * Checks if the task is currently assigned
      * @return true if assigned, false otherwise
      */

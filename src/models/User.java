@@ -249,8 +249,7 @@ public class User extends BaseEntity {
      */
     @Override
     public String toString() {
-        return String.format("User{id=%d, username='%s', fullName='%s', role=%s, email='%s'}",
-                           id, username, fullName, role.getDisplayName(), email);
+        return username;
     }
     
     /**

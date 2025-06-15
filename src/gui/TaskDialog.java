@@ -20,6 +20,7 @@ public class TaskDialog extends JDialog {
     private Task task;
     private User currentUser;
     private ProjectDAO projectDAO;
+    private TaskDAO taskDAO;
     private UserDAO userDAO;
     private boolean confirmed = false;
     
@@ -51,6 +52,7 @@ public class TaskDialog extends JDialog {
         this.task = task;
         this.currentUser = currentUser;
         this.projectDAO = projectDAO;
+        this.taskDAO = new TaskDAO();
         this.userDAO = userDAO;
         
         setupDialog();
@@ -431,7 +433,8 @@ public class TaskDialog extends JDialog {
                     task.setDueDate(null);
                 }
                 
-                return true;
+                // Save to database
+                return taskDAO.save(task);
             }
             
             @Override
@@ -440,10 +443,18 @@ public class TaskDialog extends JDialog {
                     Boolean success = get();
                     if (success) {
                         confirmed = true;
-                        dispose();
+                        showStatusMessage("Task saved successfully!");
+                        
+                        // Close dialog after 1 second
+                        Timer timer = new Timer(1000, e -> dispose());
+                        timer.setRepeats(false);
+                        timer.start();
+                    } else {
+                        showStatusMessage("Failed to save task to database");
                     }
                 } catch (Exception e) {
-                    showStatusMessage(e.getMessage());
+                    showStatusMessage("Failed to save task: " + e.getMessage());
+                    e.printStackTrace(); // For debugging
                 }
             }
         };

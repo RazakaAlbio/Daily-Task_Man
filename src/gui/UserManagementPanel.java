@@ -290,7 +290,7 @@ public class UserManagementPanel extends JPanel {
                 
                 // Don't allow deleting current user
                 if (hasSelection) {
-                    Long selectedUserId = (Long) tableModel.getValueAt(userTable.getSelectedRow(), 0);
+                    Integer selectedUserId = (Integer) tableModel.getValueAt(userTable.getSelectedRow(), 0);
                     deleteButton.setEnabled(!selectedUserId.equals(currentUser.getId()));
                 } else {
                     deleteButton.setEnabled(false);
@@ -512,12 +512,12 @@ public class UserManagementPanel extends JPanel {
         int selectedRow = userTable.getSelectedRow();
         if (selectedRow == -1) return;
         
-        Long userId = (Long) tableModel.getValueAt(selectedRow, 0);
+        Integer userId = (Integer) tableModel.getValueAt(selectedRow, 0);
         
         SwingWorker<User, Void> worker = new SwingWorker<User, Void>() {
             @Override
             protected User doInBackground() throws Exception {
-                return userDAO.findById(userId.intValue());
+                return userDAO.findById(userId);
             }
             
             @Override
@@ -552,10 +552,10 @@ public class UserManagementPanel extends JPanel {
         if (selectedRow == -1) return;
         
         String username = (String) tableModel.getValueAt(selectedRow, 1);
-        Long userId = (Long) tableModel.getValueAt(selectedRow, 0);
+        Integer userId = (Integer) tableModel.getValueAt(selectedRow, 0);
         
         // Don't allow deleting current user
-        if (userId.intValue() == currentUser.getId()) {
+        if (userId == currentUser.getId()) {
             showErrorMessage("You cannot delete your own account");
             return;
         }
@@ -604,7 +604,7 @@ public class UserManagementPanel extends JPanel {
         if (selectedRow == -1) return;
         
         String username = (String) tableModel.getValueAt(selectedRow, 1);
-        Long userId = (Long) tableModel.getValueAt(selectedRow, 0);
+        Integer userId = (Integer) tableModel.getValueAt(selectedRow, 0);
         
         String newPassword = JOptionPane.showInputDialog(
             this,
@@ -622,7 +622,7 @@ public class UserManagementPanel extends JPanel {
             SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
                 @Override
                 protected Boolean doInBackground() throws Exception {
-                    return userDAO.updatePassword(userId.intValue(), newPassword);
+                    return userDAO.updatePassword(userId, newPassword);
                 }
                 
                 @Override

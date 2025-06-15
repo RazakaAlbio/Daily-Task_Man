@@ -23,8 +23,12 @@ public abstract class BaseDAO<T extends BaseEntity> {
     public BaseDAO() {
         try {
             this.connection = DatabaseConfig.getConnection();
+            if (this.connection == null) {
+                throw new SQLException("Database connection is null");
+            }
         } catch (SQLException e) {
             System.err.println("Failed to initialize database connection: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -127,6 +131,11 @@ public abstract class BaseDAO<T extends BaseEntity> {
      * @return true if insert successful, false otherwise
      */
     protected boolean insert(T entity) {
+        if (connection == null) {
+            System.err.println("Database connection is null");
+            return false;
+        }
+        
         String sql = getInsertSQL();
         try (PreparedStatement stmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             setInsertParameters(stmt, entity);
@@ -137,10 +146,12 @@ public abstract class BaseDAO<T extends BaseEntity> {
                 if (generatedKeys.next()) {
                     entity.setId(generatedKeys.getInt(1));
                 }
+                entity.updateTimestamp();
                 return true;
             }
         } catch (SQLException e) {
             System.err.println("Error inserting entity: " + e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
@@ -151,13 +162,23 @@ public abstract class BaseDAO<T extends BaseEntity> {
      * @return true if update successful, false otherwise
      */
     protected boolean update(T entity) {
+        if (connection == null) {
+            System.err.println("Database connection is null");
+            return false;
+        }
+        
         String sql = getUpdateSQL();
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             setUpdateParameters(stmt, entity);
             int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
+            if (affectedRows > 0) {
+                entity.updateTimestamp();
+                return true;
+            }
+            return false;
         } catch (SQLException e) {
             System.err.println("Error updating entity: " + e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }

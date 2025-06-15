@@ -246,12 +246,12 @@ public class DashboardOverviewPanel extends JPanel {
             if (currentUser.getRole() == User.Role.ADMIN || currentUser.getRole() == User.Role.MANAGER) {
                 recentTasks = taskDAO.findAll().stream()
                     .sorted((t1, t2) -> t2.getUpdatedAt().compareTo(t1.getUpdatedAt()))
-                    .limit(10)
+                    .limit(5)
                     .collect(Collectors.toList());
             } else {
                 recentTasks = taskDAO.findByAssignedUser(currentUser.getId()).stream()
                     .sorted((t1, t2) -> t2.getUpdatedAt().compareTo(t1.getUpdatedAt()))
-                    .limit(10)
+                    .limit(5)
                     .collect(Collectors.toList());
             }
             
@@ -361,6 +361,11 @@ public class DashboardOverviewPanel extends JPanel {
             navigateToTasksView();
         });
         
+        // Add extra spacing for employee role to center buttons better
+        if (currentUser.getRole() == User.Role.EMPLOYEE) {
+            panel.add(Box.createVerticalStrut(15));
+        }
+        
         addActionButton(panel, "View Projects", TaskManagerApp.WARNING_COLOR, e -> {
             navigateToProjectsView();
         });
@@ -410,7 +415,7 @@ public class DashboardOverviewPanel extends JPanel {
         buttonWrapper.add(button);
         
         panel.add(buttonWrapper);
-        panel.add(Box.createVerticalStrut(8));
+        panel.add(Box.createVerticalStrut(3));
     }
     
     /**

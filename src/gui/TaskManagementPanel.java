@@ -622,12 +622,12 @@ public class TaskManagementPanel extends JPanel {
         int selectedRow = taskTable.getSelectedRow();
         if (selectedRow == -1) return;
         
-        Long taskId = (Long) tableModel.getValueAt(selectedRow, 0);
+        Integer taskId = (Integer) tableModel.getValueAt(selectedRow, 0);
         
         SwingWorker<Task, Void> worker = new SwingWorker<Task, Void>() {
             @Override
             protected Task doInBackground() throws Exception {
-                return taskDAO.findById(taskId.intValue());
+                return taskDAO.findById(taskId);
             }
             
             @Override
@@ -701,12 +701,12 @@ public class TaskManagementPanel extends JPanel {
         );
         
         if (result == JOptionPane.YES_OPTION) {
-            Long taskId = (Long) tableModel.getValueAt(selectedRow, 0);
+            Integer taskId = (Integer) tableModel.getValueAt(selectedRow, 0);
             
             SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
                 @Override
                 protected Boolean doInBackground() throws Exception {
-                    return taskDAO.deleteById(taskId.intValue());
+                    return taskDAO.deleteById(taskId);
                 }
                 
                 @Override
@@ -736,16 +736,102 @@ public class TaskManagementPanel extends JPanel {
         int selectedRow = taskTable.getSelectedRow();
         if (selectedRow == -1) return;
         
-        Long taskId = (Long) tableModel.getValueAt(selectedRow, 0);
+        Integer taskId = (Integer) tableModel.getValueAt(selectedRow, 0);
         String taskTitle = (String) tableModel.getValueAt(selectedRow, 1);
         
-        // TODO: Show task assignment dialog
-        JOptionPane.showMessageDialog(
-            this,
-            "Assign task: " + taskTitle + "\nTask ID: " + taskId,
-            "Assign Task",
-            JOptionPane.INFORMATION_MESSAGE
-        );
+        SwingWorker<Task, Void> worker = new SwingWorker<Task, Void>() {
+            @Override
+            protected Task doInBackground() throws Exception {
+                return taskDAO.findById(taskId);
+            }
+            
+            @Override
+            protected void done() {
+                try {
+                    Task task = get();
+                    if (task != null) {
+                        showTaskAssignmentDialog(task);
+                    }
+                } catch (Exception e) {
+                    showErrorMessage("Failed to load task: " + e.getMessage());
+                }
+            }
+        };
+        
+        worker.execute();
+    }
+    
+    /**
+     * Shows task assignment dialog
+     * @param task Task to assign
+     */
+    private void showTaskAssignmentDialog(Task task) {
+        // Get list of users for assignment
+        SwingWorker<List<User>, Void> worker = new SwingWorker<List<User>, Void>() {
+            @Override
+            protected List<User> doInBackground() throws Exception {
+                return userDAO.findAll();
+            }
+            
+            @Override
+            protected void done() {
+                try {
+                    List<User> users = get();
+                    User[] userArray = users.toArray(new User[0]);
+                    
+                    User selectedUser = (User) JOptionPane.showInputDialog(
+                        TaskManagementPanel.this,
+                        "Select user to assign task '" + task.getTitle() + "' to:",
+                        "Assign Task",
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        userArray,
+                        task.getAssignedUser()
+                    );
+                    
+                    if (selectedUser != null) {
+                        assignTaskToUser(task, selectedUser);
+                    }
+                } catch (Exception e) {
+                    showErrorMessage("Failed to load users: " + e.getMessage());
+                }
+            }
+        };
+        
+        worker.execute();
+    }
+    
+    /**
+     * Assigns task to selected user
+     * @param task Task to assign
+     * @param user User to assign to
+     */
+    private void assignTaskToUser(Task task, User user) {
+        SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
+            @Override
+            protected Boolean doInBackground() throws Exception {
+                task.setAssignedUser(user);
+                task.setAssigner(currentUser);
+                return taskDAO.save(task);
+            }
+            
+            @Override
+            protected void done() {
+                try {
+                    Boolean success = get();
+                    if (success) {
+                        updateStatusLabel("Task assigned successfully to " + user.getFullName());
+                        loadTasks();
+                    } else {
+                        showErrorMessage("Failed to assign task");
+                    }
+                } catch (Exception e) {
+                    showErrorMessage("Failed to assign task: " + e.getMessage());
+                }
+            }
+        };
+        
+        worker.execute();
     }
     
     /**
@@ -755,15 +841,141 @@ public class TaskManagementPanel extends JPanel {
         int selectedRow = taskTable.getSelectedRow();
         if (selectedRow == -1) return;
         
-        Long taskId = (Long) tableModel.getValueAt(selectedRow, 0);
+        Integer taskId = (Integer) tableModel.getValueAt(selectedRow, 0);
         
-        // TODO: Show task details dialog
-        JOptionPane.showMessageDialog(
-            this,
-            "View task details for task ID: " + taskId,
-            "Task Details",
-            JOptionPane.INFORMATION_MESSAGE
-        );
+        SwingWorker<Task, Void> worker = new SwingWorker<Task, Void>() {
+            @Override
+            protected Task doInBackground() throws Exception {
+                return taskDAO.findById(taskId);
+            }
+            
+            @Override
+            protected void done() {
+                try {
+                    Task task = get();
+                    if (task != null) {
+                        showTaskDetailsDialog(task);
+                    }
+                } catch (Exception e) {
+                    showErrorMessage("Failed to load task details: " + e.getMessage());
+                }
+            }
+        };
+        
+        worker.execute();
+    }
+    
+    /**
+     * Shows task details in a dialog
+     * @param task Task to show details for
+     */
+    private void showTaskDetailsDialog(Task task) {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Task Details", true);
+        dialog.setSize(500, 400);
+        dialog.setLocationRelativeTo(this);
+        
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        
+        // Create details panel
+        JPanel detailsPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        
+        // Title
+        gbc.gridx = 0; gbc.gridy = 0;
+        detailsPanel.add(new JLabel("Title:"), gbc);
+        gbc.gridx = 1;
+        detailsPanel.add(new JLabel(task.getTitle()), gbc);
+        
+        // Description
+        gbc.gridx = 0; gbc.gridy = 1;
+        detailsPanel.add(new JLabel("Description:"), gbc);
+        gbc.gridx = 1;
+        JTextArea descArea = new JTextArea(task.getDescription() != null ? task.getDescription() : "No description");
+        descArea.setEditable(false);
+        descArea.setRows(3);
+        descArea.setLineWrap(true);
+        descArea.setWrapStyleWord(true);
+        JScrollPane descScroll = new JScrollPane(descArea);
+        detailsPanel.add(descScroll, gbc);
+        
+        // Status
+        gbc.gridx = 0; gbc.gridy = 2;
+        detailsPanel.add(new JLabel("Status:"), gbc);
+        gbc.gridx = 1;
+        detailsPanel.add(new JLabel(task.getStatus().toString()), gbc);
+        
+        // Priority
+        gbc.gridx = 0; gbc.gridy = 3;
+        detailsPanel.add(new JLabel("Priority:"), gbc);
+        gbc.gridx = 1;
+        detailsPanel.add(new JLabel(task.getPriority().toString()), gbc);
+        
+        // Project
+        gbc.gridx = 0; gbc.gridy = 4;
+        detailsPanel.add(new JLabel("Project:"), gbc);
+        gbc.gridx = 1;
+        detailsPanel.add(new JLabel(task.getProject() != null ? task.getProject().getName() : "No project"), gbc);
+        
+        // Assigned User
+        gbc.gridx = 0; gbc.gridy = 5;
+        detailsPanel.add(new JLabel("Assigned To:"), gbc);
+        gbc.gridx = 1;
+        detailsPanel.add(new JLabel(task.getAssignedUser() != null ? task.getAssignedUser().getFullName() : "Unassigned"), gbc);
+        
+        // Assigner
+        gbc.gridx = 0; gbc.gridy = 6;
+        detailsPanel.add(new JLabel("Assigned By:"), gbc);
+        gbc.gridx = 1;
+        detailsPanel.add(new JLabel(task.getAssigner() != null ? task.getAssigner().getFullName() : "Unknown"), gbc);
+        
+        // Due Date
+        gbc.gridx = 0; gbc.gridy = 7;
+        detailsPanel.add(new JLabel("Due Date:"), gbc);
+        gbc.gridx = 1;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        detailsPanel.add(new JLabel(task.getDueDate() != null ? task.getDueDate().format(formatter) : "No due date"), gbc);
+        
+        // Created At
+        gbc.gridx = 0; gbc.gridy = 8;
+        detailsPanel.add(new JLabel("Created:"), gbc);
+        gbc.gridx = 1;
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        detailsPanel.add(new JLabel(task.getCreatedAt().format(dateTimeFormatter)), gbc);
+        
+        // Updated At
+        gbc.gridx = 0; gbc.gridy = 9;
+        detailsPanel.add(new JLabel("Updated:"), gbc);
+        gbc.gridx = 1;
+        detailsPanel.add(new JLabel(task.getUpdatedAt().format(dateTimeFormatter)), gbc);
+        
+        // Buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        
+        // Add Edit button for employees if they are assigned to this task
+        if (currentUser.getRole() == User.Role.EMPLOYEE && 
+            task.getAssignedUser() != null && 
+            task.getAssignedUser().getId() == currentUser.getId()) {
+            JButton editButton = new JButton("Edit Progress");
+            editButton.setBackground(TaskManagerApp.PRIMARY_COLOR);
+            editButton.setForeground(Color.WHITE);
+            editButton.addActionListener(e -> {
+                dialog.dispose();
+                showEditTaskDialog(task);
+            });
+            buttonPanel.add(editButton);
+        }
+        
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> dialog.dispose());
+        buttonPanel.add(closeButton);
+        
+        mainPanel.add(detailsPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        dialog.add(mainPanel);
+        dialog.setVisible(true);
     }
     
     /**
@@ -921,5 +1133,98 @@ public class TaskManagementPanel extends JPanel {
             
             return this;
         }
+    }
+    
+    /**
+     * Shows edit task dialog for employees to update task progress
+     * @param task Task to edit
+     */
+    private void showEditTaskDialog(Task task) {
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Edit Task Progress", true);
+        dialog.setSize(400, 300);
+        dialog.setLocationRelativeTo(this);
+        
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        
+        // Create form panel
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        
+        // Task title (read-only)
+        gbc.gridx = 0; gbc.gridy = 0;
+        formPanel.add(new JLabel("Task:"), gbc);
+        gbc.gridx = 1;
+        JLabel titleLabel = new JLabel(task.getTitle());
+        titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
+        formPanel.add(titleLabel, gbc);
+        
+        // Status dropdown
+        gbc.gridx = 0; gbc.gridy = 1;
+        formPanel.add(new JLabel("Status:"), gbc);
+        gbc.gridx = 1;
+        JComboBox<Task.Status> statusCombo = new JComboBox<>(Task.Status.values());
+        statusCombo.setSelectedItem(task.getStatus());
+        formPanel.add(statusCombo, gbc);
+        
+        // Progress notes
+        gbc.gridx = 0; gbc.gridy = 2;
+        formPanel.add(new JLabel("Progress Notes:"), gbc);
+        gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        JTextArea notesArea = new JTextArea(5, 20);
+        notesArea.setLineWrap(true);
+        notesArea.setWrapStyleWord(true);
+        notesArea.setText(task.getDescription() != null ? task.getDescription() : "");
+        JScrollPane notesScroll = new JScrollPane(notesArea);
+        formPanel.add(notesScroll, gbc);
+        
+        // Buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        
+        JButton saveButton = new JButton("Save Progress");
+        saveButton.setBackground(TaskManagerApp.SUCCESS_COLOR);
+        saveButton.setForeground(Color.WHITE);
+        saveButton.addActionListener(e -> {
+            try {
+                // Update task status and description
+                task.setStatus((Task.Status) statusCombo.getSelectedItem());
+                task.setDescription(notesArea.getText().trim());
+                
+                // Save to database
+                taskDAO.save(task);
+                
+                // Refresh table
+                loadTasks();
+                
+                // Show success message
+                JOptionPane.showMessageDialog(dialog, 
+                    "Task progress updated successfully!", 
+                    "Success", 
+                    JOptionPane.INFORMATION_MESSAGE);
+                
+                dialog.dispose();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(dialog, 
+                    "Error updating task: " + ex.getMessage(), 
+                    "Error", 
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> dialog.dispose());
+        
+        buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+        
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        dialog.add(mainPanel);
+        dialog.setVisible(true);
     }
 }
