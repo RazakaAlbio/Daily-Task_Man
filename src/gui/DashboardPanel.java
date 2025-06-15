@@ -123,9 +123,9 @@ public class DashboardPanel extends JPanel {
         button.setBackground(Color.WHITE);
         button.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createMatteBorder(0, 0, 1, 0, TaskManagerApp.BORDER_COLOR),
-            BorderFactory.createEmptyBorder(20, 20, 20, 20)
+            BorderFactory.createEmptyBorder(20, 0, 20, 0)
         ));
-        button.setHorizontalAlignment(SwingConstants.LEFT);
+        button.setHorizontalAlignment(SwingConstants.CENTER);
         button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
@@ -159,13 +159,17 @@ public class DashboardPanel extends JPanel {
         sidebar.setBackground(Color.WHITE);
         sidebar.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, TaskManagerApp.BORDER_COLOR));
         sidebar.setPreferredSize(new Dimension(250, 0));
+        sidebar.setMinimumSize(new Dimension(250, 0));
+        sidebar.setMaximumSize(new Dimension(250, Integer.MAX_VALUE));
         
         // Logo/Title section
         JPanel logoPanel = new JPanel(new BorderLayout());
         logoPanel.setBackground(TaskManagerApp.PRIMARY_COLOR);
         logoPanel.setPreferredSize(new Dimension(250, 100));
+        logoPanel.setMinimumSize(new Dimension(250, 100));
         logoPanel.setMaximumSize(new Dimension(250, 100));
         logoPanel.setBorder(BorderFactory.createEmptyBorder(25, 0, 25, 0));
+        logoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         JLabel logoLabel = new JLabel("Task Manager", SwingConstants.CENTER);
         logoLabel.setFont(TaskManagerApp.HEADER_FONT.deriveFont(Font.BOLD, 22f));
@@ -176,11 +180,23 @@ public class DashboardPanel extends JPanel {
         JPanel navPanel = new JPanel();
         navPanel.setLayout(new BoxLayout(navPanel, BoxLayout.Y_AXIS));
         navPanel.setBackground(Color.WHITE);
+        navPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // Add navigation buttons
+        // Add navigation buttons with consistent sizing
+        dashboardButton.setPreferredSize(new Dimension(250, 60));
+        dashboardButton.setMinimumSize(new Dimension(250, 60));
         dashboardButton.setMaximumSize(new Dimension(250, 60));
+        dashboardButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        projectsButton.setPreferredSize(new Dimension(250, 60));
+        projectsButton.setMinimumSize(new Dimension(250, 60));
         projectsButton.setMaximumSize(new Dimension(250, 60));
+        projectsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        tasksButton.setPreferredSize(new Dimension(250, 60));
+        tasksButton.setMinimumSize(new Dimension(250, 60));
         tasksButton.setMaximumSize(new Dimension(250, 60));
+        tasksButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         navPanel.add(dashboardButton);
         navPanel.add(projectsButton);
@@ -188,7 +204,10 @@ public class DashboardPanel extends JPanel {
         
         // Only show users button for admin/manager
         if (currentUser.getRole() == User.Role.ADMIN || currentUser.getRole() == User.Role.MANAGER) {
+            usersButton.setPreferredSize(new Dimension(250, 60));
+            usersButton.setMinimumSize(new Dimension(250, 60));
             usersButton.setMaximumSize(new Dimension(250, 60));
+            usersButton.setAlignmentX(Component.CENTER_ALIGNMENT);
             navPanel.add(usersButton);
         }
         

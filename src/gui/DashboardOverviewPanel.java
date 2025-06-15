@@ -363,7 +363,7 @@ public class DashboardOverviewPanel extends JPanel {
         
         // Add extra spacing for employee role to center buttons better
         if (currentUser.getRole() == User.Role.EMPLOYEE) {
-            panel.add(Box.createVerticalStrut(15));
+            panel.add(Box.createVerticalStrut(5));
         }
         
         addActionButton(panel, "View Projects", TaskManagerApp.WARNING_COLOR, e -> {

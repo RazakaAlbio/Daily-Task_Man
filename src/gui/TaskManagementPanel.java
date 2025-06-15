@@ -176,16 +176,16 @@ public class TaskManagementPanel extends JPanel {
         
         // Create pagination components
         firstPageButton = TaskManagerApp.createStyledButton("<<", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
-        firstPageButton.setPreferredSize(new Dimension(50, 30));
+        firstPageButton.setPreferredSize(new Dimension(80, 40));
         
         prevPageButton = TaskManagerApp.createStyledButton("<", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
-        prevPageButton.setPreferredSize(new Dimension(50, 30));
+        prevPageButton.setPreferredSize(new Dimension(80, 40));
         
         nextPageButton = TaskManagerApp.createStyledButton(">", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
-        nextPageButton.setPreferredSize(new Dimension(50, 30));
+        nextPageButton.setPreferredSize(new Dimension(80, 40));
         
         lastPageButton = TaskManagerApp.createStyledButton(">>", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
-        lastPageButton.setPreferredSize(new Dimension(50, 30));
+        lastPageButton.setPreferredSize(new Dimension(80, 40));
         
         pageInfoLabel = new JLabel("Page 1 of 1");
         pageInfoLabel.setFont(TaskManagerApp.BODY_FONT);
@@ -692,12 +692,26 @@ public class TaskManagementPanel extends JPanel {
         
         String taskTitle = (String) tableModel.getValueAt(selectedRow, 1);
         
+        // Create custom icon to prevent clipping
+        ImageIcon icon = null;
+        try {
+            ImageIcon originalIcon = (ImageIcon) UIManager.getIcon("OptionPane.warningIcon");
+            if (originalIcon != null) {
+                // Scale the icon to a smaller size to prevent clipping
+                Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+                icon = new ImageIcon(img);
+            }
+        } catch (Exception e) {
+            // Fallback to no icon if there's an issue
+        }
+        
         int result = JOptionPane.showConfirmDialog(
             this,
             "Are you sure you want to delete task '" + taskTitle + "'?",
             "Confirm Delete",
             JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE
+            JOptionPane.WARNING_MESSAGE,
+            icon
         );
         
         if (result == JOptionPane.YES_OPTION) {
@@ -871,15 +885,16 @@ public class TaskManagementPanel extends JPanel {
      */
     private void showTaskDetailsDialog(Task task) {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Task Details", true);
-        dialog.setSize(500, 400);
+        dialog.setSize(650, 550);
         dialog.setLocationRelativeTo(this);
         
         JPanel mainPanel = new JPanel(new BorderLayout());
         
         // Create details panel
         JPanel detailsPanel = new JPanel(new GridBagLayout());
+        detailsPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(8, 8, 8, 8);
         gbc.anchor = GridBagConstraints.WEST;
         
         // Title
@@ -890,15 +905,30 @@ public class TaskManagementPanel extends JPanel {
         
         // Description
         gbc.gridx = 0; gbc.gridy = 1;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
         detailsPanel.add(new JLabel("Description:"), gbc);
         gbc.gridx = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
         JTextArea descArea = new JTextArea(task.getDescription() != null ? task.getDescription() : "No description");
         descArea.setEditable(false);
-        descArea.setRows(3);
+        descArea.setRows(12);
+        descArea.setColumns(50);
         descArea.setLineWrap(true);
         descArea.setWrapStyleWord(true);
+        descArea.setFont(descArea.getFont().deriveFont(14f));
+        descArea.setMargin(new Insets(10, 10, 10, 10));
         JScrollPane descScroll = new JScrollPane(descArea);
+        descScroll.setPreferredSize(new Dimension(500, 200));
+        descScroll.setMinimumSize(new Dimension(400, 150));
         detailsPanel.add(descScroll, gbc);
+        
+        // Reset constraints for other fields
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0.0;
+        gbc.weighty = 0.0;
+        gbc.anchor = GridBagConstraints.WEST;
         
         // Status
         gbc.gridx = 0; gbc.gridy = 2;
@@ -958,8 +988,13 @@ public class TaskManagementPanel extends JPanel {
             task.getAssignedUser() != null && 
             task.getAssignedUser().getId() == currentUser.getId()) {
             JButton editButton = new JButton("Edit Progress");
-            editButton.setBackground(TaskManagerApp.PRIMARY_COLOR);
-            editButton.setForeground(Color.WHITE);
+            editButton.setBackground(new Color(0, 100, 200)); // Darker blue for better contrast
+            editButton.setForeground(Color.BLACK);
+            editButton.setOpaque(true);
+            editButton.setBorderPainted(true);
+            editButton.setBorder(BorderFactory.createRaisedBevelBorder());
+            editButton.setFont(TaskManagerApp.BODY_FONT.deriveFont(Font.BOLD, 12f));
+            editButton.setPreferredSize(new Dimension(120, 30));
             editButton.addActionListener(e -> {
                 dialog.dispose();
                 showEditTaskDialog(task);
@@ -1187,7 +1222,7 @@ public class TaskManagementPanel extends JPanel {
         
         JButton saveButton = new JButton("Save Progress");
         saveButton.setBackground(TaskManagerApp.SUCCESS_COLOR);
-        saveButton.setForeground(Color.WHITE);
+        saveButton.setForeground(Color.BLACK);
         saveButton.addActionListener(e -> {
             try {
                 // Update task status and description

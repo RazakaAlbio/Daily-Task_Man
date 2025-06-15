@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.Image;
 
 /**
  * Main application class for Task Manager
@@ -193,7 +194,12 @@ public class TaskManagerApp extends JFrame {
         ImageIcon icon = null;
         try {
             // Use a simple question mark icon or default system icon
-            icon = (ImageIcon) UIManager.getIcon("OptionPane.questionIcon");
+            ImageIcon originalIcon = (ImageIcon) UIManager.getIcon("OptionPane.questionIcon");
+            if (originalIcon != null) {
+                // Scale the icon to a smaller size to prevent clipping
+                Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+                icon = new ImageIcon(img);
+            }
         } catch (Exception e) {
             // Fallback to no icon if there's an issue
         }
@@ -223,12 +229,27 @@ public class TaskManagerApp extends JFrame {
      * Exits the application with proper cleanup
      */
     public void exitApplication() {
+        // Create custom icon to prevent clipping
+        ImageIcon icon = null;
+        try {
+            // Use a simple question mark icon or default system icon
+            ImageIcon originalIcon = (ImageIcon) UIManager.getIcon("OptionPane.questionIcon");
+            if (originalIcon != null) {
+                // Scale the icon to a smaller size to prevent clipping
+                Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+                icon = new ImageIcon(img);
+            }
+        } catch (Exception e) {
+            // Fallback to no icon if there's an issue
+        }
+        
         int option = JOptionPane.showConfirmDialog(
             this,
             "Are you sure you want to exit the application?",
             "Confirm Exit",
             JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE
+            JOptionPane.QUESTION_MESSAGE,
+            icon
         );
         
         if (option == JOptionPane.YES_OPTION) {

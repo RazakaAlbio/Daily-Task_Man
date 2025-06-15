@@ -160,16 +160,16 @@ public class ProjectManagementPanel extends JPanel {
         
         // Create pagination components
         firstPageButton = TaskManagerApp.createStyledButton("<<", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
-        firstPageButton.setPreferredSize(new Dimension(50, 30));
+        firstPageButton.setPreferredSize(new Dimension(80, 40));
         
         prevPageButton = TaskManagerApp.createStyledButton("<", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
-        prevPageButton.setPreferredSize(new Dimension(50, 30));
+        prevPageButton.setPreferredSize(new Dimension(80, 40));
         
         nextPageButton = TaskManagerApp.createStyledButton(">", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
-        nextPageButton.setPreferredSize(new Dimension(50, 30));
+        nextPageButton.setPreferredSize(new Dimension(80, 40));
         
         lastPageButton = TaskManagerApp.createStyledButton(">>", TaskManagerApp.SECONDARY_COLOR, Color.WHITE);
-        lastPageButton.setPreferredSize(new Dimension(50, 30));
+        lastPageButton.setPreferredSize(new Dimension(80, 40));
         
         pageInfoLabel = new JLabel("Page 1 of 1");
         pageInfoLabel.setFont(TaskManagerApp.BODY_FONT);
@@ -620,13 +620,27 @@ public class ProjectManagementPanel extends JPanel {
         
         String projectName = (String) tableModel.getValueAt(selectedRow, 1);
         
+        // Create custom icon to prevent clipping
+        ImageIcon icon = null;
+        try {
+            ImageIcon originalIcon = (ImageIcon) UIManager.getIcon("OptionPane.warningIcon");
+            if (originalIcon != null) {
+                // Scale the icon to a smaller size to prevent clipping
+                Image img = originalIcon.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+                icon = new ImageIcon(img);
+            }
+        } catch (Exception e) {
+            // Fallback to no icon if there's an issue
+        }
+        
         int result = JOptionPane.showConfirmDialog(
             this,
             "Are you sure you want to delete project '" + projectName + "'?\n" +
             "This will also delete all associated tasks.",
             "Confirm Delete",
             JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE
+            JOptionPane.WARNING_MESSAGE,
+            icon
         );
         
         if (result == JOptionPane.YES_OPTION) {
